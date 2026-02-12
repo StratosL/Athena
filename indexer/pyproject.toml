@@ -1,0 +1,60 @@
+[project]
+name = "athena-indexer"
+version = "0.1.0"
+description = "Obsidian vault → Elasticsearch indexer for Athena"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "elasticsearch[async]>=8.17.0",
+    "python-frontmatter>=1.1.0",
+    "watchdog>=6.0.0",
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.5.0",
+    "python-dotenv>=1.0.0",
+    "rich>=13.9.0",                 # CLI output formatting
+]
+
+[project.scripts]
+athena-index = "src.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.8.0",
+]
+
+# --- Ruff (linter + formatter) ---
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+exclude = [".git", ".venv", "__pycache__", ".mypy_cache", ".ruff_cache"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort (import sorting)
+    "B",      # flake8-bugbear
+    "UP",     # pyupgrade (modernize syntax)
+    "S",      # flake8-bandit (security)
+    "RUF",    # Ruff-specific rules
+]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S108", "ANN", "ARG001"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+# --- Pytest ---
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

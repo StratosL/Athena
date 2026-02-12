@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+wheels/
+*.egg-info/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+
+# UV
+.uv/
+uv.lock
+
+# Environment variables (secrets)
+.env
+.env.local
+.env.production
+
+# Test and linting cache
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Docker
+.docker/
+
+# Elasticsearch
+*.ndjson
+
+# Reference projects (tracked but don't pollute searches)
+# reference/ is tracked — do not add it here
+
+# Hackathon artifacts that shouldn't be committed
+devpost/screenshots/*.png
+devpost/screenshots/*.jpg
+docs/*.png
