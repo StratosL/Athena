@@ -16,7 +16,7 @@ class ServerSettings(BaseSettings):
     artemis_base_url: str = "http://localhost:8000"
 
     # Elasticsearch
-    elastic_cloud_id: str = ""
+    elastic_url: str = ""
     elastic_api_key: str = ""
     conversations_index: str = "athena-conversations"
 

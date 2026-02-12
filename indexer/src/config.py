@@ -10,7 +10,7 @@ class IndexerSettings(BaseSettings):
     """
 
     # Elasticsearch
-    elastic_cloud_id: str
+    elastic_url: str
     elastic_api_key: str
     notes_index: str = "athena-notes"
     conversations_index: str = "athena-conversations"
@@ -21,7 +21,7 @@ class IndexerSettings(BaseSettings):
     # Logging
     log_level: str = "INFO"
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
 def get_settings() -> IndexerSettings:

@@ -270,7 +270,7 @@ All configuration via environment variables (see `.env.example`):
 
 | Variable | Required | Default | Purpose |
 |----------|----------|---------|---------|
-| `ELASTIC_CLOUD_ID` | Yes | — | Elasticsearch endpoint URL |
+| `ELASTIC_URL` | Yes | — | Elasticsearch endpoint URL |
 | `ELASTIC_API_KEY` | Yes | — | Elasticsearch API key |
 | `VAULT_PATH` | Yes | `/vault` | Path to Obsidian vault |
 | `ARTEMIS_BASE_URL` | Yes | `http://localhost:8000` | Artemis backend URL |
@@ -299,7 +299,7 @@ All configuration via environment variables (see `.env.example`):
 
 - [x] Project scaffold and configuration
 - [x] Elasticsearch Serverless setup (ELSER + indices)
-- [ ] Indexer: parse, index, and sync Obsidian vault
+- [x] Indexer: parse, index, and sync Obsidian vault
 - [ ] Sample vault with 15-20 demo notes
 - [ ] MCP server with Artemis tools
 - [ ] VaultManager with direct vault CRUD
