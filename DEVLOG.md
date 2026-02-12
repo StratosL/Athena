@@ -11,14 +11,14 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~3 hours (Days 1–3) |
+| Total time | ~4 hours (Days 1–4) |
 | Sub-projects | 4 (indexer, mcp-server, voice-client, agent-config) |
 | ES indices | 2 (athena-notes, athena-conversations) |
-| MCP tools planned | 14 (3 vault + 7 Artemis + 2 knowledge + 2 research) |
+| MCP tools implemented | 13 (3 vault + 7 Artemis + 1 knowledge + 2 research) |
 | ES|QL tools planned | 5 |
 | Sample vault | 17 notes across 5 folders, 135 wikilinks |
 | Indexer status | Validated end-to-end — 17/17 indexed, dedup confirmed, semantic search working |
-| Current state | Indexer + sample vault complete, ready for MCP server |
+| Current state | Indexer + sample vault + MCP server complete, ready for Agent Builder config |
 
 ---
 
@@ -136,20 +136,59 @@ Created 17 realistic demo notes and validated the full indexer pipeline end-to-e
 
 **ELSER semantic search quality:** Queries with zero keyword overlap still return correct results. "How to handle user login" matches Authentication Module and JWT Patterns despite neither containing the word "login" verbatim — ELSER's semantic expansion working as expected.
 
+### Day 4: MCP Server Implementation (Feb 12) — ~1 hour
+
+Built the entire MCP server — 3 adapter classes, 13 MCP tools across 4 groups, and the FastMCP entry point with SSE transport.
+
+**Adapter classes (Phase 1 — no MCP dependency):**
+
+- `vault_manager.py` (~465 lines) — `VaultManager` class with path validation (directory traversal prevention via `resolve()` + `startswith()`), frontmatter parsing via `python-frontmatter`, full CRUD (create, read, append, edit, delete, move), folder creation, and 3 search modes (keyword with filename/title/content scoring, metadata filtering by tags/folder/date, recency by mtime). Pydantic models `NoteSummary` and `NoteContent` for structured output. `confirm_destructive` gate on deletes.
+- `artemis_client.py` (~100 lines) — Thin `httpx.AsyncClient` wrapper over 7 Artemis REST endpoints plus health check. Query param construction for `list_tasks`, JSON body building for `create_task`/`assign_to_plan`/`start_pomodoro`.
+- `es_client.py` (~44 lines) — `KnowledgeStore` with single `save_conversation()` method indexing to `athena-conversations`. Sets `summary_semantic` = `summary` (ELSER embeds at index time).
+
+**MCP tools (Phase 2 — 13 tools across 4 modules):**
+
+| Module | Tools | Pattern |
+|--------|-------|---------|
+| `tools/artemis.py` | 7 tools | Direct proxy to ArtemisClient with `httpx.HTTPStatusError`/`ConnectError` handling |
+| `tools/vault.py` | 3 tools | Operation dispatch (`vault_query` 4 ops, `vault_read` 3 ops, `vault_manage` 6 ops) |
+| `tools/knowledge.py` | 1 tool | `save_conversation_summary` with ES-not-configured graceful fallback |
+| `tools/research.py` | 2 tools | `web_search` (Tavily preferred, Brave fallback), `fetch_url` (html2text, 5K char truncation) |
+
+**Server wiring (Phase 3):**
+
+- `server.py` — Creates `FastMCP("Athena")` with host/port config, initializes adapter singletons at module level, conditionally creates `KnowledgeStore` (ES credentials optional), imports tool modules to trigger `@mcp.tool()` registration. Tool modules import `mcp` and adapters from `server.py` (circular import safe because adapters are defined before tool imports).
+
+**Key findings:**
+
+- FastMCP v1.26 moved `host`/`port` from `run()` to the constructor — plan specified the older API
+- Dockerfile was missing `uv.lock` in COPY directive — fixed to support `--locked` builds
+
+**Validation results:**
+
+| Check | Result |
+|-------|--------|
+| `ruff check` | All checks passed |
+| `ruff format --check` | 11 files formatted |
+| Adapter imports | All resolve OK |
+| VaultManager smoke test | 17 notes, read/search/recent all work |
+| Server startup | Starts on port 8001, serves SSE |
+| Docker build | `athena-mcp:latest` built successfully |
+
 ---
 
 ## What's Next
 
-Phase 1 (Foundation) is in progress. Indexer core is done. Remaining work:
+Phase 1 (Foundation) nearly complete. Indexer + MCP server done. Remaining work:
 
-- ~~Build the indexer: `parser.py`, `indexer.py`, `cli.py`, `watcher.py`~~ ✅
-- ~~Create sample vault with 15-20 demo notes across 5 folders~~ ✅
-- ~~Index sample vault and validate semantic search works end-to-end~~ ✅
-- Build MCP server core: `server.py` (SSE transport), `artemis_client.py` (httpx wrapper), 7 Artemis tools
-- Build vault MCP tools: `vault_query`, `vault_read`, `vault_manage` via VaultManager
+- ~~Build the indexer: `parser.py`, `indexer.py`, `cli.py`, `watcher.py`~~ done
+- ~~Create sample vault with 15-20 demo notes across 5 folders~~ done
+- ~~Index sample vault and validate semantic search works end-to-end~~ done
+- ~~Build MCP server core: `server.py` (SSE transport), `artemis_client.py` (httpx wrapper), 7 Artemis tools~~ done
+- ~~Build vault MCP tools: `vault_query`, `vault_read`, `vault_manage` via VaultManager~~ done
 - Configure Agent Builder: system prompt, ES|QL tools, register MCP server via ngrok
 - End-to-end validation: "search notes → create task in Artemis"
 
 ---
 
-*Last updated: February 12, 2026 (Day 3)*
+*Last updated: February 12, 2026 (Day 4)*

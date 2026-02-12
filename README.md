@@ -301,12 +301,13 @@ All configuration via environment variables (see `.env.example`):
 - [x] Elasticsearch Serverless setup (ELSER + indices)
 - [x] Indexer: parse, index, and sync Obsidian vault
 - [x] Sample vault with 17 demo notes (validated end-to-end)
-- [ ] MCP server with Artemis tools
-- [ ] VaultManager with direct vault CRUD
-- [ ] Vault MCP tools (query, read, manage)
+- [x] MCP server with 13 tools (SSE transport, Docker image)
+- [x] VaultManager with direct vault CRUD (path validation, frontmatter, search)
+- [x] Vault MCP tools (query, read, manage — 13 operations)
+- [x] Artemis MCP tools (7 tools — tasks, daily plans, analytics, pomodoro)
+- [x] Knowledge write-back (conversation memory to Elasticsearch)
+- [x] Research tools (web search via Tavily/Brave + URL fetch)
 - [ ] Agent Builder configuration (system prompt + ES|QL tools)
-- [ ] Knowledge write-back (conversation memory)
-- [ ] Research tools (web search + URL fetch)
 - [ ] Voice client (Whisper STT + OpenAI TTS)
 - [ ] Demo video and hackathon submission
 
