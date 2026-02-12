@@ -11,13 +11,14 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~2 hours (Days 1–2) |
+| Total time | ~3 hours (Days 1–3) |
 | Sub-projects | 4 (indexer, mcp-server, voice-client, agent-config) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools planned | 14 (3 vault + 7 Artemis + 2 knowledge + 2 research) |
 | ES|QL tools planned | 5 |
-| Indexer status | Core complete — parser, bulk indexer, CLI, watcher |
-| Current state | Indexer functional, ready for sample vault + MCP server |
+| Sample vault | 17 notes across 5 folders, 135 wikilinks |
+| Indexer status | Validated end-to-end — 17/17 indexed, dedup confirmed, semantic search working |
+| Current state | Indexer + sample vault complete, ready for MCP server |
 
 ---
 
@@ -97,6 +98,44 @@ Built the full indexer pipeline: vault parsing → checksum dedup → bulk ES in
 - `athena-index index` on empty `sample-vault/` → 0 files, 0 errors
 - All files pass `ruff check` and `ruff format --check`
 
+### Day 3: Sample Vault + Indexer Pipeline Validation (Feb 12) — ~1 hour
+
+Created 17 realistic demo notes and validated the full indexer pipeline end-to-end against Elasticsearch.
+
+**Sample vault** — 17 markdown notes across 5 folders using a "Stratos/Helios" productivity app narrative. All notes have valid YAML frontmatter (title, tags list, created/updated dates). Content includes 135 `[[wikilinks]]` for cross-referencing, code blocks, tables, and task lists. Covers all PRD user stories:
+
+| Folder | Notes | Type |
+|--------|-------|------|
+| Research/ | 3 | research |
+| Ideas/ | 3 | idea |
+| Projects/ | 4 | project |
+| Meeting Notes/ | 3 | meeting |
+| Daily Notes/ | 4 | daily |
+
+**Key content for demo scenarios:**
+- `API Refactoring.md` — 7 extractable tasks (5 `- [ ]`, 1 `TODO:`, 1 `Action item:`) for US-7 task extraction
+- `Sprint Review 2026-02-07.md` — 5 numbered action items for meeting follow-up demo
+- `2026-02-11.md` — 5 pomodoro entries with timestamps for US-8 productivity analytics
+- `2026-02-12.md` — Today's priorities with P0/P1/P2 for US-5 daily planning
+- All 17 notes contain wikilinks for cross-note relationship demos
+
+**Pipeline validation results:**
+
+| Check | Result |
+|-------|--------|
+| Parser dry-run | 17 parsed, 0 errors |
+| Bulk index (first run) | 17 indexed, 0 skipped, 0 errors |
+| Checksum dedup (re-run) | 0 indexed, 17 skipped |
+| ES document count | 17 |
+| Type distribution | daily=4, project=4, idea=3, meeting=3, research=3 |
+| Semantic: "API refactoring plan" | API Refactoring at #1 |
+| Semantic: "user authentication login" | Authentication Module at #1 |
+| Semantic: "sprint review discussion" | Sprint Review at #1 |
+
+**Config update:** Set `VAULT_PATH=/home/stardust/Athena/sample-vault` in `.env`. Removed `.gitkeep` placeholder files from all 5 folders.
+
+**ELSER semantic search quality:** Queries with zero keyword overlap still return correct results. "How to handle user login" matches Authentication Module and JWT Patterns despite neither containing the word "login" verbatim — ELSER's semantic expansion working as expected.
+
 ---
 
 ## What's Next
@@ -104,8 +143,8 @@ Built the full indexer pipeline: vault parsing → checksum dedup → bulk ES in
 Phase 1 (Foundation) is in progress. Indexer core is done. Remaining work:
 
 - ~~Build the indexer: `parser.py`, `indexer.py`, `cli.py`, `watcher.py`~~ ✅
-- Create sample vault with 15-20 demo notes across 5 folders
-- Index sample vault and validate semantic search works end-to-end
+- ~~Create sample vault with 15-20 demo notes across 5 folders~~ ✅
+- ~~Index sample vault and validate semantic search works end-to-end~~ ✅
 - Build MCP server core: `server.py` (SSE transport), `artemis_client.py` (httpx wrapper), 7 Artemis tools
 - Build vault MCP tools: `vault_query`, `vault_read`, `vault_manage` via VaultManager
 - Configure Agent Builder: system prompt, ES|QL tools, register MCP server via ngrok
@@ -113,4 +152,4 @@ Phase 1 (Foundation) is in progress. Indexer core is done. Remaining work:
 
 ---
 
-*Last updated: February 12, 2026 (Day 2)*
+*Last updated: February 12, 2026 (Day 3)*
