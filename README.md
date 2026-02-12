@@ -181,12 +181,12 @@ Athena/
 │   ├── setup-guide.md        # Kibana configuration walkthrough
 │   └── tools/                # ES|QL tool definitions
 │
-├── sample-vault/             # Demo Obsidian vault (15-20 notes)
-│   ├── Projects/
-│   ├── Ideas/
-│   ├── Meeting Notes/
-│   ├── Daily Notes/
-│   └── Research/
+├── sample-vault/             # Demo Obsidian vault (17 notes, 5 folders)
+│   ├── Research/              # 3 notes — ES semantic search, API versioning, JWT
+│   ├── Ideas/                 # 3 notes — onboarding, AI prioritization, voice
+│   ├── Projects/              # 4 notes — DB migration, auth, roadmap, API refactor
+│   ├── Meeting Notes/         # 3 notes — planning, sprint review, standup
+│   └── Daily Notes/           # 4 notes — journals with pomodoro logs, priorities
 │
 ├── docker-compose.yml        # MCP server + optional Artemis
 ├── PRD.md                    # Product Requirements Document
@@ -300,7 +300,7 @@ All configuration via environment variables (see `.env.example`):
 - [x] Project scaffold and configuration
 - [x] Elasticsearch Serverless setup (ELSER + indices)
 - [x] Indexer: parse, index, and sync Obsidian vault
-- [ ] Sample vault with 15-20 demo notes
+- [x] Sample vault with 17 demo notes (validated end-to-end)
 - [ ] MCP server with Artemis tools
 - [ ] VaultManager with direct vault CRUD
 - [ ] Vault MCP tools (query, read, manage)
