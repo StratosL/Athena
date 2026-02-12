@@ -7,7 +7,7 @@ NOTES_INDEX_MAPPING: dict = {
         "properties": {
             "title": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},
             "content": {"type": "text"},
-            "content_semantic": {"type": "semantic_text", "inference_id": "elser-endpoint"},
+            "content_semantic": {"type": "semantic_text", "inference_id": ".elser-2-elastic"},
             "tags": {"type": "keyword"},
             "note_type": {"type": "keyword"},
             "path": {"type": "keyword"},
@@ -26,7 +26,7 @@ CONVERSATIONS_INDEX_MAPPING: dict = {
     "mappings": {
         "properties": {
             "summary": {"type": "text"},
-            "summary_semantic": {"type": "semantic_text", "inference_id": "elser-endpoint"},
+            "summary_semantic": {"type": "semantic_text", "inference_id": ".elser-2-elastic"},
             "topics": {"type": "keyword"},
             "extracted_tasks": {"type": "text"},
             "task_ids_created": {"type": "keyword"},
