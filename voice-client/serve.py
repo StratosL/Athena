@@ -27,7 +27,7 @@ class VoiceSettings(BaseSettings):
     elastic_api_key: str = ""
     agent_id: str = "athena"
     openai_api_key: str = ""
-    voice_server_port: int = 3000
+    voice_server_port: int = 3001
 
     model_config = {
         "env_file": (".env", "../.env"),
@@ -113,7 +113,7 @@ async def transcribe(request: web.Request) -> web.Response:
 
         async for part in reader:
             if part.name == "file":
-                audio_data = await part.read()
+                audio_data = bytes(await part.read())
                 if part.filename:
                     filename = part.filename
 
