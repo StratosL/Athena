@@ -43,6 +43,22 @@ class VoiceSettings(BaseSettings):
 
 settings = VoiceSettings()
 
+# Persistent HTTP clients — reuse TCP connections + TLS sessions across requests.
+# Created at module level, closed via app cleanup signal.
+kibana_client = httpx.AsyncClient(
+    timeout=120.0,
+    headers={
+        "Authorization": f"ApiKey {settings.elastic_api_key}",
+        "kbn-xsrf": "true",
+        "Content-Type": "application/json",
+    },
+)
+openai_client = httpx.AsyncClient(
+    timeout=30.0,
+    headers={"Authorization": f"Bearer {settings.openai_api_key}"},
+)
+
+
 # --- Routes ---
 
 
@@ -71,18 +87,12 @@ async def chat(request: web.Request) -> web.Response:
         payload["conversation_id"] = conversation_id
 
     try:
-        async with httpx.AsyncClient(timeout=120.0) as client:
-            resp = await client.post(
-                f"{settings.kibana_url}/api/agent_builder/converse",
-                headers={
-                    "Authorization": f"ApiKey {settings.elastic_api_key}",
-                    "kbn-xsrf": "true",
-                    "Content-Type": "application/json",
-                },
-                json=payload,
-            )
-            resp.raise_for_status()
-            return web.json_response(resp.json())
+        resp = await kibana_client.post(
+            f"{settings.kibana_url}/api/agent_builder/converse",
+            json=payload,
+        )
+        resp.raise_for_status()
+        return web.json_response(resp.json())
     except httpx.HTTPStatusError as e:
         logger.error("Kibana returned %s: %s", e.response.status_code, e.response.text)
         return web.json_response(
@@ -120,15 +130,13 @@ async def transcribe(request: web.Request) -> web.Response:
         if not audio_data:
             return web.json_response({"error": "No audio file provided"}, status=400)
 
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            resp = await client.post(
-                "https://api.openai.com/v1/audio/transcriptions",
-                headers={"Authorization": f"Bearer {settings.openai_api_key}"},
-                files={"file": (filename, audio_data, "audio/webm")},
-                data={"model": "whisper-1"},
-            )
-            resp.raise_for_status()
-            return web.json_response(resp.json())
+        resp = await openai_client.post(
+            "https://api.openai.com/v1/audio/transcriptions",
+            files={"file": (filename, audio_data, "audio/webm")},
+            data={"model": "whisper-1"},
+        )
+        resp.raise_for_status()
+        return web.json_response(resp.json())
     except httpx.HTTPStatusError as e:
         logger.error("Whisper returned %s: %s", e.response.status_code, e.response.text)
         return web.json_response(
@@ -159,17 +167,13 @@ async def speak(request: web.Request) -> web.Response:
         text = text[:4096]
 
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            resp = await client.post(
-                "https://api.openai.com/v1/audio/speech",
-                headers={
-                    "Authorization": f"Bearer {settings.openai_api_key}",
-                    "Content-Type": "application/json",
-                },
-                json={"model": "tts-1", "voice": voice, "input": text},
-            )
-            resp.raise_for_status()
-            return web.Response(body=resp.content, content_type="audio/mpeg")
+        resp = await openai_client.post(
+            "https://api.openai.com/v1/audio/speech",
+            headers={"Content-Type": "application/json"},
+            json={"model": "tts-1", "voice": voice, "input": text},
+        )
+        resp.raise_for_status()
+        return web.Response(body=resp.content, content_type="audio/mpeg")
     except httpx.HTTPStatusError as e:
         logger.error("TTS returned %s: %s", e.response.status_code, e.response.text)
         return web.json_response(
@@ -183,9 +187,16 @@ async def speak(request: web.Request) -> web.Response:
 # --- App Setup ---
 
 
+async def on_shutdown(_app: web.Application) -> None:
+    """Close persistent HTTP clients on shutdown."""
+    await kibana_client.aclose()
+    await openai_client.aclose()
+
+
 def create_app() -> web.Application:
     """Create and configure the aiohttp application."""
     app = web.Application()
+    app.on_shutdown.append(on_shutdown)
     app.router.add_get("/api/health", health)
     app.router.add_post("/api/chat", chat)
     app.router.add_post("/api/transcribe", transcribe)
