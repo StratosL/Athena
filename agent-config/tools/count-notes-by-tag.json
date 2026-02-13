@@ -1,0 +1,10 @@
+{
+  "id": "notes.count_notes_by_tag",
+  "type": "esql",
+  "description": "Get the distribution of tags across all notes in the Obsidian vault. Returns each tag and how many notes use it, sorted by count. Use this to understand the vault's topic coverage, discover what tags exist, or answer 'what topics do I write about most?'. No parameters needed.",
+  "tags": ["notes", "tags", "analytics"],
+  "configuration": {
+    "query": "FROM athena-notes | MV_EXPAND tags | STATS note_count = COUNT(*) BY tags | SORT note_count DESC | LIMIT 30",
+    "params": {}
+  }
+}

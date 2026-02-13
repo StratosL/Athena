@@ -1,0 +1,15 @@
+{
+  "id": "notes.get_notes_by_tag",
+  "type": "esql",
+  "description": "Find all notes with a specific tag from the Obsidian vault. Use this when the user asks about notes tagged with a topic (e.g., 'show me all notes tagged api' or 'what notes are about productivity?'). Tags are lowercase keywords extracted from note frontmatter.",
+  "tags": ["notes", "tags", "filter"],
+  "configuration": {
+    "query": "FROM athena-notes | MV_EXPAND tags | WHERE tags == ?tag | KEEP title, vault_relative_path, tags, note_type, word_count, updated_at | SORT updated_at DESC | LIMIT 20",
+    "params": {
+      "tag": {
+        "type": "keyword",
+        "description": "The exact tag to filter by, lowercase. Examples: 'api', 'productivity', 'helios', 'meeting', 'idea'. Use count_notes_by_tag first if unsure which tags exist."
+      }
+    }
+  }
+}

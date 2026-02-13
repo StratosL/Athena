@@ -179,7 +179,7 @@ Athena/
 ├── agent-config/             # Agent Builder configuration
 │   ├── system-prompt.md      # Athena persona and behavioral rules
 │   ├── setup-guide.md        # Kibana configuration walkthrough
-│   └── tools/                # ES|QL tool definitions
+│   └── tools/                # ES|QL + index search tool definitions (6 JSON files)
 │
 ├── sample-vault/             # Demo Obsidian vault (17 notes, 5 folders)
 │   ├── Research/              # 3 notes — ES semantic search, API versioning, JWT
@@ -202,11 +202,12 @@ Athena/
 
 | Tool | Purpose |
 |------|---------|
-| `search_notes` | Semantic + full-text search across indexed notes |
+| `search_notes` | Semantic + full-text search across indexed notes (ELSER hybrid scoring) |
 | `get_recent_notes` | Recently modified notes by time window |
-| `get_notes_by_tag` | Filter notes by tag |
+| `get_notes_by_tag` | Filter notes by tag (`MV_EXPAND` for keyword arrays) |
 | `get_conversation_history` | Recall past conversation summaries |
 | `count_notes_by_tag` | Tag distribution statistics |
+| `semantic_search` | Dynamic natural-language search (index search tool) |
 
 ### MCP Tools — Vault (direct filesystem)
 
@@ -307,7 +308,7 @@ All configuration via environment variables (see `.env.example`):
 - [x] Artemis MCP tools (7 tools — tasks, daily plans, analytics, pomodoro)
 - [x] Knowledge write-back (conversation memory to Elasticsearch)
 - [x] Research tools (web search via Tavily/Brave + URL fetch)
-- [ ] Agent Builder configuration (system prompt + ES|QL tools)
+- [x] Agent Builder configuration (system prompt + 6 ES|QL/index search tools + setup guide)
 - [ ] Voice client (Whisper STT + OpenAI TTS)
 - [ ] Demo video and hackathon submission
 

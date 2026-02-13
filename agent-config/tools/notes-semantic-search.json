@@ -1,0 +1,11 @@
+{
+  "id": "notes.semantic_search",
+  "type": "index_search",
+  "description": "Perform intelligent natural language search over the Obsidian vault notes index. Use this for complex or nuanced searches that go beyond simple keyword matching. This tool dynamically generates search queries and can combine multiple search criteria. For simple topic searches, prefer the search_notes ES|QL tool instead.",
+  "tags": ["notes", "search", "semantic", "dynamic"],
+  "configuration": {
+    "pattern": "athena-notes",
+    "row_limit": 10,
+    "custom_instructions": "This index contains Obsidian vault notes with these key fields: title (note title), content (full markdown body), content_semantic (ELSER semantic embeddings of content), tags (keyword array of topic tags), note_type (project/idea/meeting/daily/research/note), vault_relative_path (file path like 'Projects/API Refactoring.md'), word_count (integer), created_at and updated_at (dates). Always include title, vault_relative_path, tags, and note_type in results. For semantic queries, prefer the content_semantic field."
+  }
+}

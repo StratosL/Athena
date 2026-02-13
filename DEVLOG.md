@@ -11,15 +11,16 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~4.5 hours (Days 1–5) |
+| Total time | ~5.5 hours (Days 1–6) |
 | Sub-projects | 4 (indexer, mcp-server, voice-client, agent-config) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 13 (3 vault + 7 Artemis + 1 knowledge + 2 research) |
-| ES|QL tools planned | 5 |
+| ES|QL tools defined | 5 + 1 index search |
 | Sample vault | 17 notes across 5 folders, 135 wikilinks |
 | Indexer status | Validated end-to-end — 17/17 indexed, dedup confirmed, semantic search working |
 | Type checking | pyright in both sub-projects — 0 errors |
-| Current state | Indexer + sample vault + MCP server complete, ready for Agent Builder config |
+| System prompt | 244 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails |
+| Current state | Agent Builder config complete — system prompt + ES|QL tools + setup guide written |
 
 ---
 
@@ -66,9 +67,9 @@ Started from the PRD. Built the full project skeleton and connected to Elastic C
 
 ---
 
-## Tool Surface (Planned)
+## Tool Surface
 
-**ES|QL Tools (Agent Builder):** `search_notes`, `get_recent_notes`, `get_notes_by_tag`, `get_conversation_history`, `count_notes_by_tag`
+**ES|QL Tools (Agent Builder):** `search_notes`, `get_recent_notes`, `get_notes_by_tag`, `get_conversation_history`, `count_notes_by_tag` + `semantic_search` (index search)
 
 **MCP — Vault:** `vault_query` (4 operations), `vault_read` (3 operations), `vault_manage` (6 operations)
 
@@ -136,6 +137,46 @@ Created 17 realistic demo notes and validated the full indexer pipeline end-to-e
 **Config update:** Set `VAULT_PATH=/home/stardust/Athena/sample-vault` in `.env`. Removed `.gitkeep` placeholder files from all 5 folders.
 
 **ELSER semantic search quality:** Queries with zero keyword overlap still return correct results. "How to handle user login" matches Authentication Module and JWT Patterns despite neither containing the word "login" verbatim — ELSER's semantic expansion working as expected.
+
+### Day 6: Agent Builder Configuration (Feb 13) — ~1 hour
+
+Wrote the complete Athena system prompt, defined all ES|QL tool specifications, and created the setup guide. The agent now has a brain.
+
+**System prompt** (`agent-config/system-prompt.md`, 244 lines) — Complete Athena persona following Elastic's recommended `Goal / Steps / Guardrails` structure with patterns adapted from the Paddy reference agent. Encodes:
+- Identity and conversational tone
+- Full tool inventory (6 ES|QL + 13 MCP tools) with descriptions
+- Tool selection decision matrix (semantic vs keyword, ES|QL vs vault MCP, when to use which)
+- 7 workflow patterns (knowledge search, task extraction, daily planning, idea capture, research, productivity check-in, conversation memory)
+- Eisenhower Matrix classification rules with concrete vault examples
+- 1-3-5 daily planning rule with step-by-step process
+- Human-in-the-loop guardrails (never create/edit/delete without confirmation)
+- Error recovery and search fallback strategy
+- Output formatting guidelines
+
+**ES|QL tool definitions** (5 JSON files in `agent-config/tools/`):
+
+| Tool | Query Pattern | Key Technique |
+|------|--------------|---------------|
+| `search-notes.json` | Hybrid semantic + full-text | `MATCH(content_semantic, ..., {"boost": 0.7}) OR MATCH(content, ..., {"boost": 0.3})` |
+| `get-recent-notes.json` | Temporal filter | `NOW() - TO_TIMEDURATION(?time_range)` for parameterized date ranges |
+| `get-notes-by-tag.json` | Tag filter | `MV_EXPAND tags` before `WHERE tags == ?tag` for keyword arrays |
+| `count-notes-by-tag.json` | Tag aggregation | `MV_EXPAND tags` then `STATS COUNT(*) BY tags` — no parameters |
+| `get-conversation-history.json` | Conversation search | Queries `athena-conversations` index with `MATCH(summary_semantic, ?topic)` |
+
+**Index search tool** (`notes-semantic-search.json`) — Dynamic natural-language search that auto-generates ES|QL queries. Complements the predefined templates for complex/ad-hoc queries.
+
+**Setup guide** (`agent-config/setup-guide.md`, 128 lines) — Step-by-step instructions covering LLM connector setup, ES|QL tool creation (UI + API), MCP server registration, agent creation with all tools, end-to-end verification queries, and troubleshooting table.
+
+**Validation results:**
+
+| Check | Result |
+|-------|--------|
+| JSON syntax (6 files) | All valid |
+| Field name cross-reference | All fields match `mappings.py` |
+| Tool-prompt consistency | 18/18 tools referenced in prompt |
+| Prompt length | 244 lines (under 400 target) |
+
+---
 
 ### Day 5: Validation + Type Checking (Feb 13) — ~30 min
 
@@ -208,16 +249,19 @@ Built the entire MCP server — 3 adapter classes, 13 MCP tools across 4 groups,
 
 ## What's Next
 
-Phase 1 (Foundation) nearly complete. Indexer + MCP server done. Remaining work:
+Phase 1 (Foundation) complete. All config artifacts written. Remaining work:
 
 - ~~Build the indexer: `parser.py`, `indexer.py`, `cli.py`, `watcher.py`~~ done
 - ~~Create sample vault with 15-20 demo notes across 5 folders~~ done
 - ~~Index sample vault and validate semantic search works end-to-end~~ done
 - ~~Build MCP server core: `server.py` (SSE transport), `artemis_client.py` (httpx wrapper), 7 Artemis tools~~ done
 - ~~Build vault MCP tools: `vault_query`, `vault_read`, `vault_manage` via VaultManager~~ done
-- Configure Agent Builder: system prompt, ES|QL tools, register MCP server via ngrok
+- ~~Configure Agent Builder: system prompt, ES|QL tools, setup guide~~ done
+- Deploy MCP server via ngrok, register in Kibana, paste system prompt + tool configs
 - End-to-end validation: "search notes → create task in Artemis"
+- Voice client: Whisper STT + OpenAI TTS (P3)
+- Demo video recording
 
 ---
 
-*Last updated: February 13, 2026 (Day 5)*
+*Last updated: February 13, 2026 (Day 6)*

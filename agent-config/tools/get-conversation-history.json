@@ -1,0 +1,19 @@
+{
+  "id": "conversations.get_history",
+  "type": "esql",
+  "description": "Search past conversation summaries stored in Elasticsearch. Use this when the user asks 'what did we discuss about X?', 'do you remember when we talked about Y?', or wants to recall decisions from previous sessions. Searches semantically across conversation summaries.",
+  "tags": ["conversations", "memory", "search"],
+  "configuration": {
+    "query": "FROM athena-conversations METADATA _score | WHERE MATCH(summary_semantic, ?topic) | KEEP summary, topics, extracted_tasks, task_ids_created, timestamp, _score | SORT _score DESC | LIMIT ?limit",
+    "params": {
+      "topic": {
+        "type": "string",
+        "description": "Topic or subject to search past conversations for. Can be natural language."
+      },
+      "limit": {
+        "type": "integer",
+        "description": "Maximum conversation summaries to return. Default 5."
+      }
+    }
+  }
+}

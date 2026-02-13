@@ -1,0 +1,19 @@
+{
+  "id": "notes.get_recent_notes",
+  "type": "esql",
+  "description": "Get the most recently modified notes from the Obsidian vault. Use this when the user asks 'what have I been working on?', 'show me recent notes', or wants to see what changed in the last few days. Returns notes sorted by modification date.",
+  "tags": ["notes", "recent", "temporal"],
+  "configuration": {
+    "query": "FROM athena-notes | WHERE updated_at >= NOW() - TO_TIMEDURATION(?time_range) | KEEP title, vault_relative_path, tags, note_type, word_count, updated_at | SORT updated_at DESC | LIMIT ?limit",
+    "params": {
+      "time_range": {
+        "type": "string",
+        "description": "How far back to look. Format: 'N hours'. Examples: '168 hours' for 7 days, '72 hours' for 3 days, '24 hours' for today. Default: '168 hours' (7 days)."
+      },
+      "limit": {
+        "type": "integer",
+        "description": "Maximum number of notes to return. Default 10."
+      }
+    }
+  }
+}

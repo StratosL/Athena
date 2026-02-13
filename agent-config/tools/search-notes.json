@@ -1,0 +1,19 @@
+{
+  "id": "notes.search_notes",
+  "type": "esql",
+  "description": "Search Obsidian vault notes by meaning using semantic search (ELSER) combined with keyword matching. Use this when the user asks about a topic, wants to find notes related to a concept, or asks 'what did I write about X?'. Returns note titles, paths, tags, and relevance scores. Prefer this over vault_query for broad or conceptual searches.",
+  "tags": ["notes", "search", "semantic"],
+  "configuration": {
+    "query": "FROM athena-notes METADATA _score | WHERE MATCH(content_semantic, ?query, {\"boost\": 0.7}) OR MATCH(content, ?query, {\"boost\": 0.3}) | KEEP title, vault_relative_path, tags, note_type, word_count, updated_at, _score | SORT _score DESC | LIMIT ?limit",
+    "params": {
+      "query": {
+        "type": "string",
+        "description": "Natural language search query describing what the user is looking for. Can be a question, topic, or keywords."
+      },
+      "limit": {
+        "type": "integer",
+        "description": "Maximum number of results to return. Default 5 for focused searches, up to 10 for broad exploration."
+      }
+    }
+  }
+}
