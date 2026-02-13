@@ -26,4 +26,4 @@ class IndexerSettings(BaseSettings):
 
 def get_settings() -> IndexerSettings:
     """Create and return settings instance."""
-    return IndexerSettings()
+    return IndexerSettings()  # type: ignore[call-arg]  # pydantic-settings loads from env

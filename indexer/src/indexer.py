@@ -155,7 +155,7 @@ class VaultIndexer:
         success_count, error_items = await async_bulk(self.es, actions, raise_on_error=False)
         result.indexed = success_count
 
-        if error_items:
+        if isinstance(error_items, list):
             for err in error_items:
                 result.errors.append(str(err))
 
@@ -201,7 +201,7 @@ class VaultIndexer:
             await self.es.delete(
                 index=self.settings.notes_index,
                 id=doc_id,
-                ignore=[404],
+                ignore=[404],  # type: ignore[call-arg]  # ES runtime param not in type stubs
             )
             logger.info("Deleted note: %s", vault_relative_path)
             return True

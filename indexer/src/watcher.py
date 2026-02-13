@@ -29,42 +29,46 @@ class VaultEventHandler(FileSystemEventHandler):
         return not any(part.startswith(".") for part in p.parts)
 
     def on_created(self, event: FileSystemEvent) -> None:
-        if not event.is_directory and self._is_markdown(event.src_path):
-            logger.info("File created: %s", event.src_path)
+        src = str(event.src_path)
+        if not event.is_directory and self._is_markdown(src):
+            logger.info("File created: %s", src)
             asyncio.run_coroutine_threadsafe(
-                self.indexer.index_single_note(Path(event.src_path)), self.loop
+                self.indexer.index_single_note(Path(src)), self.loop
             )
 
     def on_modified(self, event: FileSystemEvent) -> None:
-        if not event.is_directory and self._is_markdown(event.src_path):
-            logger.info("File modified: %s", event.src_path)
+        src = str(event.src_path)
+        if not event.is_directory and self._is_markdown(src):
+            logger.info("File modified: %s", src)
             asyncio.run_coroutine_threadsafe(
-                self.indexer.index_single_note(Path(event.src_path)), self.loop
+                self.indexer.index_single_note(Path(src)), self.loop
             )
 
     def on_deleted(self, event: FileSystemEvent) -> None:
-        if not event.is_directory and self._is_markdown(event.src_path):
-            logger.info("File deleted: %s", event.src_path)
+        src = str(event.src_path)
+        if not event.is_directory and self._is_markdown(src):
+            logger.info("File deleted: %s", src)
             asyncio.run_coroutine_threadsafe(
-                self.indexer.delete_note(Path(event.src_path)), self.loop
+                self.indexer.delete_note(Path(src)), self.loop
             )
 
     def on_moved(self, event: FileSystemEvent) -> None:
         # Delete old path, index new path
         if hasattr(event, "dest_path"):
-            src_md = self._is_markdown(event.src_path)
-            dest_md = self._is_markdown(event.dest_path)  # type: ignore[attr-defined]
+            src = str(event.src_path)
+            dest = str(event.dest_path)  # type: ignore[attr-defined]
+            src_md = self._is_markdown(src)
+            dest_md = self._is_markdown(dest)
 
             if src_md:
-                logger.info("File moved from: %s", event.src_path)
+                logger.info("File moved from: %s", src)
                 asyncio.run_coroutine_threadsafe(
-                    self.indexer.delete_note(Path(event.src_path)), self.loop
+                    self.indexer.delete_note(Path(src)), self.loop
                 )
             if dest_md:
-                logger.info("File moved to: %s", event.dest_path)  # type: ignore[attr-defined]
+                logger.info("File moved to: %s", dest)
                 asyncio.run_coroutine_threadsafe(
-                    self.indexer.index_single_note(Path(event.dest_path)),  # type: ignore[attr-defined]
-                    self.loop,
+                    self.indexer.index_single_note(Path(dest)), self.loop
                 )
 
 

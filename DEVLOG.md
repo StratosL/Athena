@@ -11,13 +11,14 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~4 hours (Days 1–4) |
+| Total time | ~4.5 hours (Days 1–5) |
 | Sub-projects | 4 (indexer, mcp-server, voice-client, agent-config) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 13 (3 vault + 7 Artemis + 1 knowledge + 2 research) |
 | ES|QL tools planned | 5 |
 | Sample vault | 17 notes across 5 folders, 135 wikilinks |
 | Indexer status | Validated end-to-end — 17/17 indexed, dedup confirmed, semantic search working |
+| Type checking | pyright in both sub-projects — 0 errors |
 | Current state | Indexer + sample vault + MCP server complete, ready for Agent Builder config |
 
 ---
@@ -136,6 +137,34 @@ Created 17 realistic demo notes and validated the full indexer pipeline end-to-e
 
 **ELSER semantic search quality:** Queries with zero keyword overlap still return correct results. "How to handle user login" matches Authentication Module and JWT Patterns despite neither containing the word "login" verbatim — ELSER's semantic expansion working as expected.
 
+### Day 5: Validation + Type Checking (Feb 13) — ~30 min
+
+Ran comprehensive validation across both sub-projects and added static type checking.
+
+**Full project validation:**
+
+| Check | indexer/ | mcp-server/ |
+|-------|---------|-------------|
+| `ruff check` | All passed | All passed |
+| `ruff format --check` | 7 files formatted | 7 files formatted |
+| Module imports | All 6 modules OK | All 11 modules OK |
+| `docker-compose.yml` | N/A | Depends on undefined `artemis` service |
+| Tests | No test files yet | No test files yet |
+
+**Added pyright to both sub-projects** as a dev dependency (`>=1.1.390`). Pyright over mypy — faster, better inference, less config, good pydantic v2 support out of the box.
+
+**mcp-server:** Passed pyright with 0 errors immediately — clean types throughout.
+
+**indexer:** Had 15 type errors across 3 files, all fixed:
+
+| File | Errors | Fix |
+|------|--------|-----|
+| `config.py` | 1 (missing args) | `# type: ignore[call-arg]` — pydantic-settings loads required fields from env vars |
+| `indexer.py` | 2 (iterable + param) | `isinstance` guard on `async_bulk` return; `# type: ignore` on ES `ignore=` runtime param |
+| `watcher.py` | 12 (`bytes \| str`) | Extract `str(event.src_path)` into local vars — watchdog types `src_path` as `bytes \| str` |
+
+**Known issue found:** `docker-compose.yml` has `mcp-server` depending on an undefined `artemis` service — needs the service definition added or the dependency removed.
+
 ### Day 4: MCP Server Implementation (Feb 12) — ~1 hour
 
 Built the entire MCP server — 3 adapter classes, 13 MCP tools across 4 groups, and the FastMCP entry point with SSE transport.
@@ -191,4 +220,4 @@ Phase 1 (Foundation) nearly complete. Indexer + MCP server done. Remaining work:
 
 ---
 
-*Last updated: February 12, 2026 (Day 4)*
+*Last updated: February 13, 2026 (Day 5)*
