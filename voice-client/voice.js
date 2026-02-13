@@ -3,23 +3,43 @@
 (function () {
   "use strict";
 
+  // --- Markdown config ---
+  if (typeof marked !== "undefined") {
+    marked.setOptions({ breaks: true, gfm: true });
+  }
+
+  function renderMarkdown(text) {
+    if (typeof marked !== "undefined" && typeof DOMPurify !== "undefined") {
+      return DOMPurify.sanitize(marked.parse(text));
+    }
+    // Fallback: escape HTML and preserve newlines
+    var div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML.replace(/\n/g, "<br>");
+  }
+
+  function timeStamp() {
+    return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
   // --- State Machine ---
-  const STATES = { IDLE: "IDLE", RECORDING: "RECORDING", TRANSCRIBING: "TRANSCRIBING", THINKING: "THINKING", SPEAKING: "SPEAKING" };
-  let state = STATES.IDLE;
-  let isVoiceMode = false;
-  let conversationId = null;
-  let mediaRecorder = null;
-  let audioChunks = [];
-  let currentAudio = null;
+  var STATES = { IDLE: "IDLE", RECORDING: "RECORDING", TRANSCRIBING: "TRANSCRIBING", THINKING: "THINKING", SPEAKING: "SPEAKING" };
+  var state = STATES.IDLE;
+  var isVoiceMode = false;
+  var conversationId = null;
+  var mediaRecorder = null;
+  var audioChunks = [];
+  var currentAudio = null;
 
   // --- Settings ---
-  let selectedVoice = localStorage.getItem("athena-voice") || "nova";
-  let autoSpeak = localStorage.getItem("athena-auto-speak") !== "false";
+  var selectedVoice = localStorage.getItem("athena-voice") || "nova";
+  var autoSpeak = localStorage.getItem("athena-auto-speak") !== "false";
 
   // --- DOM References ---
-  let $messages, $textInput, $sendBtn, $micBtn, $voiceStatus;
-  let $textContainer, $voiceContainer, $modeToggle, $modeIconMic, $modeIconText;
-  let $settingsToggle, $settingsPanel, $voiceSelect, $autoSpeak;
+  var $messages, $textInput, $sendBtn, $micBtn, $voiceStatus;
+  var $textContainer, $voiceContainer, $modeToggle, $modeIconMic, $modeIconText;
+  var $settingsToggle, $settingsPanel, $voiceSelect, $autoSpeak;
+  var $settingsBackdrop, $settingsClose, $micBtnWrapper;
 
   // --- Initialization ---
 
@@ -40,6 +60,9 @@
     $settingsPanel = document.getElementById("settings-panel");
     $voiceSelect = document.getElementById("voice-select");
     $autoSpeak = document.getElementById("auto-speak");
+    $settingsBackdrop = document.getElementById("settings-backdrop");
+    $settingsClose = document.getElementById("settings-close");
+    $micBtnWrapper = document.getElementById("mic-btn-wrapper");
 
     // Load settings
     $voiceSelect.value = selectedVoice;
@@ -56,6 +79,8 @@
     $micBtn.addEventListener("click", onMicClick);
     $modeToggle.addEventListener("click", toggleMode);
     $settingsToggle.addEventListener("click", toggleSettings);
+    $settingsClose.addEventListener("click", toggleSettings);
+    $settingsBackdrop.addEventListener("click", toggleSettings);
     $voiceSelect.addEventListener("change", function () {
       selectedVoice = $voiceSelect.value;
       localStorage.setItem("athena-voice", selectedVoice);
@@ -68,6 +93,11 @@
     // Keyboard shortcuts
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") {
+        // Close settings if open
+        if (!$settingsPanel.classList.contains("hidden")) {
+          toggleSettings();
+          return;
+        }
         if (state === STATES.RECORDING) {
           cancelRecording();
         } else if (state === STATES.SPEAKING) {
@@ -95,6 +125,7 @@
   function updateUI() {
     // Mic button state
     $micBtn.classList.toggle("recording", state === STATES.RECORDING);
+    $micBtnWrapper.classList.toggle("recording", state === STATES.RECORDING);
     $micBtn.disabled = state === STATES.TRANSCRIBING || state === STATES.THINKING;
 
     // Send button
@@ -151,21 +182,86 @@
 
   function addMessage(role, text) {
     removeStatusIndicator();
-    var el = document.createElement("div");
-    el.className = "message " + role;
-    el.textContent = text;
-    $messages.appendChild(el);
+    // Remove welcome screen on first message
+    var welcome = $messages.querySelector(".welcome");
+    if (welcome) welcome.remove();
+
+    if (role === "agent") {
+      // Wrap in message-row with avatar
+      var row = document.createElement("div");
+      row.className = "message-row";
+
+      var avatar = document.createElement("img");
+      avatar.src = "athena-logo.jpg";
+      avatar.alt = "Athena";
+      avatar.className = "agent-avatar";
+      row.appendChild(avatar);
+
+      var bubble = document.createElement("div");
+      bubble.className = "message agent";
+      bubble.innerHTML = renderMarkdown(text);
+
+      var time = document.createElement("div");
+      time.className = "msg-time";
+      time.textContent = timeStamp();
+      bubble.appendChild(time);
+
+      row.appendChild(bubble);
+      $messages.appendChild(row);
+    } else {
+      var el = document.createElement("div");
+      el.className = "message " + role;
+      if (role === "user") {
+        // Plain text for user messages
+        var span = document.createElement("span");
+        span.textContent = text;
+        el.appendChild(span);
+        var time2 = document.createElement("div");
+        time2.className = "msg-time";
+        time2.textContent = timeStamp();
+        el.appendChild(time2);
+      } else {
+        el.textContent = text;
+      }
+      $messages.appendChild(el);
+    }
+
     scrollToBottom();
   }
 
   function addWelcome() {
     var el = document.createElement("div");
     el.className = "welcome";
+
+    var hints = [
+      "What did I write about last week?",
+      "Summarize my project notes",
+      "What tasks are due today?",
+    ];
+
+    var hintsHTML = '<div class="welcome-hints">';
+    for (var i = 0; i < hints.length; i++) {
+      hintsHTML += '<button class="hint-chip" data-hint="' + hints[i] + '">' + hints[i] + '</button>';
+    }
+    hintsHTML += '</div>';
+
     el.innerHTML =
-      "<h2>Welcome to Athena</h2>" +
-      "<p>Ask about your notes, manage tasks, or explore your second brain.<br>" +
-      'Type below or click the mic icon to switch to voice mode.</p>';
+      '<img src="athena-logo.jpg" alt="Athena" class="welcome-logo">' +
+      '<h2>Welcome to Athena</h2>' +
+      '<p>Ask about your notes, manage tasks, or explore your second brain.</p>' +
+      hintsHTML;
+
     $messages.appendChild(el);
+
+    // Bind hint chip clicks
+    var chips = el.querySelectorAll(".hint-chip");
+    for (var j = 0; j < chips.length; j++) {
+      chips[j].addEventListener("click", function () {
+        var text = this.getAttribute("data-hint");
+        $textInput.value = text;
+        onSend();
+      });
+    }
   }
 
   function scrollToBottom() {
@@ -184,8 +280,16 @@
   }
 
   function toggleSettings() {
-    $settingsPanel.classList.toggle("hidden");
-    $settingsToggle.classList.toggle("active");
+    var isOpen = !$settingsPanel.classList.contains("hidden");
+    if (isOpen) {
+      $settingsPanel.classList.add("hidden");
+      $settingsBackdrop.classList.add("hidden");
+      $settingsToggle.classList.remove("active");
+    } else {
+      $settingsPanel.classList.remove("hidden");
+      $settingsBackdrop.classList.remove("hidden");
+      $settingsToggle.classList.add("active");
+    }
   }
 
   // --- Text Chat ---

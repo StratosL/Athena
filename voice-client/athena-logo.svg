@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="owl-grad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a29bfe"/>
+      <stop offset="100%" stop-color="#6c5ce7"/>
+    </linearGradient>
+  </defs>
+  <!-- Head outline -->
+  <path d="M32 6C18 6 10 18 10 30c0 10 6 18 14 22l4 6c1 1.5 2.5 2 4 2s3-0.5 4-2l4-6c8-4 14-12 14-22C54 18 46 6 32 6z"
+        stroke="url(#owl-grad)" stroke-width="2.5" fill="none"/>
+  <!-- Ear tufts -->
+  <path d="M16 18l-4-10c0 0 6 4 8 8" stroke="url(#owl-grad)" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M48 18l4-10c0 0-6 4-8 8" stroke="url(#owl-grad)" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- Left eye -->
+  <circle cx="24" cy="28" r="7" stroke="url(#owl-grad)" stroke-width="2" fill="none"/>
+  <circle cx="24" cy="28" r="2.5" fill="url(#owl-grad)"/>
+  <!-- Right eye -->
+  <circle cx="40" cy="28" r="7" stroke="url(#owl-grad)" stroke-width="2" fill="none"/>
+  <circle cx="40" cy="28" r="2.5" fill="url(#owl-grad)"/>
+  <!-- Beak -->
+  <path d="M30 35l2 4 2-4" stroke="url(#owl-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Chest feather pattern -->
+  <path d="M26 42c3 2 6 2 12 0" stroke="url(#owl-grad)" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+  <path d="M28 46c2 1.5 4 1.5 8 0" stroke="url(#owl-grad)" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.4"/>
+</svg>
