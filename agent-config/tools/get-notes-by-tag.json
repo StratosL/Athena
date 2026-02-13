@@ -7,7 +7,7 @@
     "query": "FROM athena-notes | MV_EXPAND tags | WHERE tags == ?tag | KEEP title, vault_relative_path, tags, note_type, word_count, updated_at | SORT updated_at DESC | LIMIT 20",
     "params": {
       "tag": {
-        "type": "keyword",
+        "type": "string",
         "description": "The exact tag to filter by, lowercase. Examples: 'api', 'productivity', 'helios', 'meeting', 'idea'. Use count_notes_by_tag first if unsure which tags exist."
       }
     }

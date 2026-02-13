@@ -70,7 +70,7 @@ User <-> Voice Layer (STT/TTS) <-> Agent Builder (Athena) <-> Elasticsearch (ELS
 |-----------|-----------|---------|
 | **Orchestrator** | Elastic Agent Builder | System prompt, tool routing, conversation management |
 | **Knowledge Store** | Elasticsearch Serverless + ELSER v2 | Semantic search with sparse embeddings |
-| **Tool Protocol** | MCP (SSE transport) | Agent Builder ↔ MCP server communication |
+| **Tool Protocol** | MCP (Streamable HTTP) | Agent Builder ↔ MCP server communication |
 | **Vault Access** | Python + python-frontmatter | Direct filesystem CRUD with YAML frontmatter |
 | **Artemis Integration** | httpx (async) | Task management, daily plans, analytics, pomodoro |
 | **Voice Input** | OpenAI Whisper API | Speech-to-text transcription |
@@ -98,11 +98,12 @@ User <-> Voice Layer (STT/TTS) <-> Agent Builder (Athena) <-> Elasticsearch (ELS
 |-------------|---------|-------|
 | Python | 3.12+ | [python.org](https://www.python.org/downloads/) |
 | uv | Latest | [docs.astral.sh/uv](https://docs.astral.sh/uv/) |
-| Docker | 20.10+ | [Install Docker](https://docs.docker.com/get-docker/) |
-| Docker Compose | 2.0+ | Included with Docker Desktop |
+| ngrok | 3.x | [ngrok.com](https://ngrok.com/) — free account, exposes MCP server to Elastic Cloud |
+| Docker | 20.10+ | [Install Docker](https://docs.docker.com/get-docker/) (optional — for production) |
 
 **Accounts Required:**
 - [Elastic Cloud](https://cloud.elastic.co/registration?cta=hackathon) (free 14-day trial) — Elasticsearch Serverless + Agent Builder
+- [ngrok](https://ngrok.com/) (free account) — tunnel MCP server to Elastic Cloud
 - [OpenAI](https://platform.openai.com) (pay-as-you-go) — Whisper STT + TTS (voice only)
 - [Artemis](https://github.com/StratosL/Artemis) running locally — task management backend
 
@@ -115,28 +116,40 @@ cd Athena
 cp .env.example .env
 # Edit .env with your Elastic Cloud and OpenAI credentials
 
-# 2. Install indexer dependencies
-cd indexer && uv sync && cd ..
+# 2. Index your Obsidian vault (or use the sample vault)
+cd indexer && uv sync
+uv run athena-index setup-indices
+uv run athena-index index
+cd ..
 
-# 3. Index your Obsidian vault (or use the sample vault)
-VAULT_PATH=./sample-vault uv run --project indexer athena-index setup-indices
-VAULT_PATH=./sample-vault uv run --project indexer athena-index index
+# 3. Start the MCP server
+cd mcp-server && uv sync
+uv run python -m src
+# Server starts on port 8001 (Streamable HTTP)
 
-# 4. Start the MCP server
-docker compose up --build
+# 4. Expose via ngrok (for Elastic Cloud to reach your local server)
+ngrok http 8001
+# Copy the HTTPS URL
 
 # 5. Configure Agent Builder in Kibana
 # See agent-config/setup-guide.md for step-by-step instructions
+# Or use the Kibana API — see DEVLOG.md Day 7 for the full script
+```
+
+**Docker alternative** (for production/demo recording):
+
+```bash
+docker compose up --build
 ```
 
 ### Verify
 
 ```bash
-# Check MCP server is running
-curl http://localhost:8001/health
-
-# Check Artemis connectivity
-curl http://localhost:8000/health
+# Check MCP server is running (Streamable HTTP at /)
+curl -X POST http://localhost:8001/ \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"0.1"}},"id":1}'
 
 # Verify indexed notes
 curl -s "$ELASTIC_URL/athena-notes/_count" \
@@ -161,7 +174,8 @@ Athena/
 ├── mcp-server/               # Unified MCP server
 │   └── src/
 │       ├── config.py         # Vault path, Artemis URL, ES credentials
-│       ├── server.py         # MCP server setup + SSE transport
+│       ├── server.py         # MCP server setup + Streamable HTTP transport
+│       ├── __main__.py      # Entry point (python -m src)
 │       ├── vault_manager.py  # Obsidian vault filesystem CRUD
 │       ├── artemis_client.py # httpx wrapper for Artemis REST API
 │       ├── es_client.py      # Elasticsearch knowledge write-back
@@ -244,14 +258,19 @@ Athena/
 ### Running Locally (without Docker)
 
 ```bash
-# MCP server
+# MCP server (use `python -m src`, NOT `python -m src.server`)
 cd mcp-server && uv sync
-uv run python -m src.server
+uv run python -m src
 
 # Indexer
 cd indexer && uv sync
 uv run athena-index --help
+
+# Expose to Elastic Cloud
+ngrok http 8001
 ```
+
+> **Note:** Do not run `python -m src.server` directly — it causes a double-import that prevents tools from registering. Always use `python -m src`.
 
 ### Code Quality
 
@@ -302,13 +321,14 @@ All configuration via environment variables (see `.env.example`):
 - [x] Elasticsearch Serverless setup (ELSER + indices)
 - [x] Indexer: parse, index, and sync Obsidian vault
 - [x] Sample vault with 17 demo notes (validated end-to-end)
-- [x] MCP server with 13 tools (SSE transport, Docker image)
+- [x] MCP server with 13 tools (Streamable HTTP transport, Docker image)
 - [x] VaultManager with direct vault CRUD (path validation, frontmatter, search)
 - [x] Vault MCP tools (query, read, manage — 13 operations)
 - [x] Artemis MCP tools (7 tools — tasks, daily plans, analytics, pomodoro)
 - [x] Knowledge write-back (conversation memory to Elasticsearch)
 - [x] Research tools (web search via Tavily/Brave + URL fetch)
 - [x] Agent Builder configuration (system prompt + 6 ES|QL/index search tools + setup guide)
+- [x] Deployed end-to-end (ngrok tunnel + MCP connector + 19 tools registered in Agent Builder)
 - [ ] Voice client (Whisper STT + OpenAI TTS)
 - [ ] Demo video and hackathon submission
 

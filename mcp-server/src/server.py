@@ -1,4 +1,4 @@
-"""MCP server setup with SSE transport.
+"""MCP server setup with Streamable HTTP transport.
 
 This is the main entry point for the Athena MCP server.
 Initializes adapter classes and registers all tools via FastMCP.
@@ -22,7 +22,12 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 # Create FastMCP server
-mcp = FastMCP("Athena", host="0.0.0.0", port=settings.mcp_server_port)  # noqa: S104
+mcp = FastMCP(  # noqa: S104
+    "Athena",
+    host="0.0.0.0",
+    port=settings.mcp_server_port,
+    streamable_http_path="/",
+)
 
 # Initialize adapter classes
 from src.artemis_client import ArtemisClient  # noqa: E402
@@ -50,6 +55,5 @@ import src.tools.knowledge  # noqa: E402
 import src.tools.research  # noqa: E402
 import src.tools.vault  # noqa: E402, F401
 
-if __name__ == "__main__":
-    logger.info("Starting Athena MCP server on port %d", settings.mcp_server_port)
-    mcp.run(transport="sse")
+# Entry point: run via `python -m src` (see __main__.py)
+# Do NOT use `python -m src.server` — causes double-import, tools won't register.

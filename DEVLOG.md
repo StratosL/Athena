@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~5.5 hours (Days 1–6) |
+| Total time | ~6.5 hours (Days 1–7) |
 | Sub-projects | 4 (indexer, mcp-server, voice-client, agent-config) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 13 (3 vault + 7 Artemis + 1 knowledge + 2 research) |
@@ -20,7 +20,8 @@
 | Indexer status | Validated end-to-end — 17/17 indexed, dedup confirmed, semantic search working |
 | Type checking | pyright in both sub-projects — 0 errors |
 | System prompt | 244 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails |
-| Current state | Agent Builder config complete — system prompt + ES|QL tools + setup guide written |
+| Agent Builder | Athena agent live — 19 tools (6 ES|QL + 13 MCP), 13k char system prompt |
+| Current state | Deployed end-to-end — MCP server tunneled via ngrok, agent responding in Kibana |
 
 ---
 
@@ -55,7 +56,7 @@ Started from the PRD. Built the full project skeleton and connected to Elastic C
 | Dual-path knowledge access | ES for semantic search + analytics; direct vault filesystem for real-time read/write |
 | 3-tool vault consolidation | `vault_query`, `vault_read`, `vault_manage` with operation parameters — fewer tools for the LLM to choose from |
 | ELSER v2 via `semantic_text` | Zero embedding code — ES handles chunking, inference, and sparse vector storage automatically |
-| MCP protocol (SSE transport) | Standard protocol supported by Agent Builder; SSE for stateless HTTP compatibility with ngrok |
+| MCP protocol (Streamable HTTP) | Standard protocol supported by Agent Builder; switched from SSE to Streamable HTTP (Elastic's connector requirement) |
 | `pydantic-settings` for config | Type-safe env var loading with `.env` file support, consistent across both sub-projects |
 | Docker volume mount for vault | Scoped filesystem access (`/vault:rw`), same path resolution in dev and production |
 | Checksum-based dedup | MD5 of file content for change detection, SHA-256 of vault-relative path for deterministic ES `_id` — two hashes for two purposes |
@@ -64,6 +65,10 @@ Started from the PRD. Built the full project skeleton and connected to Elastic C
 | `ELASTIC_URL` over `ELASTIC_CLOUD_ID` | Serverless uses a direct HTTPS URL, not a cloud ID — clearer naming |
 | Scroll API for checksum fetch | Handles vaults with >1000 notes; paginated retrieval of all (path, checksum) pairs |
 | `extra: ignore` in settings | Shared `.env` has vars for all services — each sub-project ignores what it doesn't need |
+| Streamable HTTP over SSE | Elastic Agent Builder's MCP connector only supports Streamable HTTP transport |
+| `streamable_http_path="/"` | Elastic's connector POSTs to root `/`, not the FastMCP default `/mcp` |
+| `__main__.py` entry point | Avoids Python double-import when running `python -m src` vs `src.server` |
+| Kibana API for setup | All Agent Builder config (tools, connectors, agents) done via REST API — reproducible, scriptable |
 
 ---
 
@@ -176,6 +181,54 @@ Wrote the complete Athena system prompt, defined all ES|QL tool specifications, 
 | Tool-prompt consistency | 18/18 tools referenced in prompt |
 | Prompt length | 244 lines (under 400 target) |
 
+### Day 7: Deployment — ngrok + Agent Builder Registration (Feb 13) — ~1 hour
+
+Deployed the MCP server to the public internet via ngrok and registered everything in Elastic Agent Builder via API. The agent is now live and responding.
+
+**ngrok setup** — Installed ngrok binary to `~/.local/bin/ngrok` (apt unavailable without sudo). Authenticated with auth token. Tunneling port 8001 to a public HTTPS URL.
+
+**Transport migration: SSE → Streamable HTTP** — Elastic's MCP connector requires Streamable HTTP transport, not SSE. Changed `mcp.run(transport="streamable-http")` in the server. Also set `streamable_http_path="/"` in the FastMCP constructor because Elastic's connector POSTs to the root path `/`, not the default `/mcp`.
+
+**Double-import fix** — Discovered that `python -m src.server` causes a Python double-import: the module loads as `__main__`, but tool modules `from src.server import mcp` load it again as `src.server`, creating a second `mcp` instance. Tools register on the second instance while `run()` is called on the first (empty) one. Fixed by adding `src/__main__.py` as the entry point — now `python -m src` works correctly.
+
+**Config fix** — MCP server config was only loading `.env` from its own directory. Updated `env_file` to `(".env", "../.env")` so it finds the project root `.env` when running locally (not in Docker).
+
+**Agent Builder API registration** — All configuration done via Kibana REST API:
+- Created MCP connector (type `.mcp`, `serverUrl` pointing to ngrok URL)
+- Created 5 ES|QL tools + 1 index search tool from `agent-config/tools/*.json`
+- Registered 13 MCP tools (type `mcp` with `connector_id` and `tool_name`)
+- Created Athena agent with 19 tools and 13,351-char system prompt (field name: `instructions`)
+
+**API discoveries:**
+
+| Field | Expected | Actual |
+|-------|----------|--------|
+| MCP connector URL field | `url` | `serverUrl` |
+| Agent system prompt field | `system_prompt` | `instructions` |
+| Agent `type` field | Required | Auto-set, must be omitted |
+| ES|QL param types | `keyword` allowed | Only `string`, `integer`, `float`, `boolean`, `date`, `array` |
+
+**ES|QL tool fix** — `get-notes-by-tag.json` had `"type": "keyword"` for the tag parameter, which the API rejected. Changed to `"type": "string"`.
+
+**Verification results:**
+
+| Check | Result |
+|-------|--------|
+| MCP server starts | Streamable HTTP on port 8001 |
+| ngrok tunnel | HTTPS URL proxying to localhost:8001 |
+| Elastic connector discovers tools | 13/13 MCP tools found |
+| Agent created | 19 tools + system prompt loaded |
+| Athena responds in Kibana chat | Working — searches vault, reads notes |
+
+**Key files changed:**
+
+| File | Change |
+|------|--------|
+| `mcp-server/src/server.py` | Streamable HTTP transport, `streamable_http_path="/"` |
+| `mcp-server/src/__main__.py` | New entry point to avoid double-import |
+| `mcp-server/src/config.py` | `env_file: (".env", "../.env")`, `extra: "ignore"` |
+| `agent-config/tools/get-notes-by-tag.json` | Param type `keyword` → `string` |
+
 ---
 
 ### Day 5: Validation + Type Checking (Feb 13) — ~30 min
@@ -257,11 +310,13 @@ Phase 1 (Foundation) complete. All config artifacts written. Remaining work:
 - ~~Build MCP server core: `server.py` (SSE transport), `artemis_client.py` (httpx wrapper), 7 Artemis tools~~ done
 - ~~Build vault MCP tools: `vault_query`, `vault_read`, `vault_manage` via VaultManager~~ done
 - ~~Configure Agent Builder: system prompt, ES|QL tools, setup guide~~ done
-- Deploy MCP server via ngrok, register in Kibana, paste system prompt + tool configs
-- End-to-end validation: "search notes → create task in Artemis"
+- ~~Deploy MCP server via ngrok, register in Kibana~~ done
+- ~~Register all 19 tools + system prompt in Agent Builder via API~~ done
+- End-to-end validation: full demo flow (search → read → extract tasks → create in Artemis)
+- Start Artemis backend so task creation tools work
 - Voice client: Whisper STT + OpenAI TTS (P3)
 - Demo video recording
 
 ---
 
-*Last updated: February 13, 2026 (Day 6)*
+*Last updated: February 13, 2026 (Day 7)*
