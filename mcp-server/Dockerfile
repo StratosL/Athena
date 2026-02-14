@@ -35,4 +35,4 @@ ENV VAULT_PATH=/vault
 
 EXPOSE 8001
 
-CMD ["python", "-m", "src.server"]
+CMD ["python", "-m", "src"]

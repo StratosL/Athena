@@ -19,6 +19,22 @@ logger = logging.getLogger(__name__)
 
 STATIC_DIR = Path(__file__).parent
 
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+}
+
+
+@web.middleware
+async def cors_middleware(request: web.Request, handler) -> web.Response:
+    """Add CORS headers to all responses and handle preflight requests."""
+    if request.method == "OPTIONS":
+        return web.Response(headers=CORS_HEADERS)
+    resp = await handler(request)
+    resp.headers.update(CORS_HEADERS)
+    return resp
+
 
 class VoiceSettings(BaseSettings):
     """Configuration loaded from .env."""
@@ -195,7 +211,7 @@ async def on_shutdown(_app: web.Application) -> None:
 
 def create_app() -> web.Application:
     """Create and configure the aiohttp application."""
-    app = web.Application()
+    app = web.Application(middlewares=[cors_middleware])
     app.on_shutdown.append(on_shutdown)
     app.router.add_get("/api/health", health)
     app.router.add_post("/api/chat", chat)

@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~6.5 hours (Days 1–7) |
+| Total time | ~10 hours (Days 1–8) |
 | Sub-projects | 4 (indexer, mcp-server, voice-client, agent-config) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 13 (3 vault + 7 Artemis + 1 knowledge + 2 research) |
@@ -21,11 +21,54 @@
 | Type checking | pyright in both sub-projects — 0 errors |
 | System prompt | 244 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails |
 | Agent Builder | Athena agent live — 19 tools (6 ES|QL + 13 MCP), 13k char system prompt |
-| Current state | Deployed end-to-end — MCP server tunneled via ngrok, agent responding in Kibana |
+| Current state | Unified experience — Artemis dashboard + Athena chat sidebar at localhost:3000 |
 
 ---
 
 ## The Journey
+
+### Day 8: Unified Athena + Artemis Experience (Feb 14) — ~3.5 hours
+
+Consolidated the multi-terminal setup into one `docker compose up` command and embedded Athena as a chat sidebar inside the Artemis React app. Three implementation sessions: backend infrastructure, React chat component, and voice polish.
+
+**Backend Infrastructure**
+
+- [x] Fixed MCP server Dockerfile CMD bug — `src.server` → `src` (avoids double-import, documented in Day 7)
+- [x] Added CORS middleware to voice proxy (`@web.middleware` with preflight handling) — required for cross-origin requests from Artemis frontend
+- [x] Created voice-client Dockerfile — multi-stage uv build matching mcp-server pattern, serves `serve.py` + static assets
+- [x] Consolidated `docker-compose.yml` — removed `profiles: [full]` from Artemis (always starts), added `voice-proxy` service (port 3001), added `ngrok` service under `profiles: [tunnel]` (image `ngrok/ngrok:latest`, exposes inspector at port 4040)
+
+**React Chat Component (Artemis frontend)**
+
+- [x] Installed `marked` + `dompurify` for markdown rendering in chat bubbles
+- [x] Added Vite dev proxy: `/athena/*` → `localhost:3001/api/*` (no CORS issues in dev)
+- [x] Created `athena-api.ts` — fetch-based API client (`athenaChat`, `athenaTranscribe`, `athenaSpeak`) following existing `api.ts` wrapper pattern
+- [x] Created `chatStore.ts` — Zustand store (messages, conversationId, status, voiceMode) following `timerStore.ts` pattern
+- [x] Created `useAthenaChat` hook — wires store + API, manages conversation ID across turns, returns response text for voice hook
+- [x] Created `ChatSidebar` component — 420px right drawer on desktop, full-screen on mobile, spring slide-in animation, glassmorphism styling, markdown rendering with DOMPurify sanitization, welcome screen with hint chips, thinking indicator with pulsing dots
+- [x] Integrated into `AppShell` — floating action button (gradient indigo→gold, positioned above mobile BottomNav), content right-padding shift when sidebar open on desktop
+
+**Voice + Polish**
+
+- [x] Created `useVoiceRecorder` hook — MediaRecorder with opus codec preference, mic track cleanup on stop/cancel
+- [x] Created `useAthenaVoice` hook — orchestrates record → transcribe → chat → speak pipeline, reads voice/auto-speak settings from localStorage
+- [x] Enhanced ChatSidebar with voice mode toggle, large animated mic button (red pulse when recording, animated ring), settings dialog (Radix Dialog with voice selection dropdown + auto-speak toggle), status indicators for all states (recording/transcribing/thinking/speaking with distinct animations), keyboard shortcuts (Space to toggle recording in voice mode, Escape to cancel/close)
+
+**Key Additions**
+
+| File | Location | Purpose |
+|------|----------|---------|
+| `voice-client/Dockerfile` | Athena | Docker image for voice proxy |
+| `src/lib/athena-api.ts` | Artemis frontend | Athena API client |
+| `src/stores/chatStore.ts` | Artemis frontend | Chat state management |
+| `src/hooks/useAthenaChat.ts` | Artemis frontend | Text chat hook |
+| `src/hooks/useVoiceRecorder.ts` | Artemis frontend | MediaRecorder wrapper |
+| `src/hooks/useAthenaVoice.ts` | Artemis frontend | Voice pipeline orchestration |
+| `src/design-system/.../ChatSidebar/` | Artemis frontend | Chat sidebar component + types |
+
+**Validation:** TypeScript compiles with 0 errors, Vite build succeeds (952KB JS, 55KB CSS).
+
+---
 
 ### Day 1: Scaffold + Elasticsearch Setup (Feb 12) — ~1 hour
 
@@ -302,7 +345,7 @@ Built the entire MCP server — 3 adapter classes, 13 MCP tools across 4 groups,
 
 ## What's Next
 
-Phase 1 (Foundation) complete. All config artifacts written. Remaining work:
+Phase 1 (Foundation) and Phase 2 (Vault + Intelligence) complete. Unified experience built. Remaining work:
 
 - ~~Build the indexer: `parser.py`, `indexer.py`, `cli.py`, `watcher.py`~~ done
 - ~~Create sample vault with 15-20 demo notes across 5 folders~~ done
@@ -312,11 +355,13 @@ Phase 1 (Foundation) complete. All config artifacts written. Remaining work:
 - ~~Configure Agent Builder: system prompt, ES|QL tools, setup guide~~ done
 - ~~Deploy MCP server via ngrok, register in Kibana~~ done
 - ~~Register all 19 tools + system prompt in Agent Builder via API~~ done
-- End-to-end validation: full demo flow (search → read → extract tasks → create in Artemis)
-- Start Artemis backend so task creation tools work
-- Voice client: Whisper STT + OpenAI TTS (P3)
+- ~~Unified Docker Compose (artemis + mcp-server + voice-proxy)~~ done
+- ~~Athena chat sidebar in Artemis frontend (text + voice)~~ done
+- End-to-end validation: full demo flow via sidebar (search → read → extract tasks → create in Artemis)
+- Verify task creation via Athena appears on Artemis Tasks page
+- Optional: streaming support (SSE token-by-token responses)
 - Demo video recording
 
 ---
 
-*Last updated: February 13, 2026 (Day 7)*
+*Last updated: February 14, 2026 (Day 8)*
