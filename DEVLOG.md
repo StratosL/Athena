@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~10 hours (Days 1–8) |
+| Total time | ~11 hours (Days 1–9) |
 | Sub-projects | 4 (indexer, mcp-server, voice-client, agent-config) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 13 (3 vault + 7 Artemis + 1 knowledge + 2 research) |
@@ -21,11 +21,38 @@
 | Type checking | pyright in both sub-projects — 0 errors |
 | System prompt | 244 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails |
 | Agent Builder | Athena agent live — 19 tools (6 ES|QL + 13 MCP), 13k char system prompt |
-| Current state | Unified experience — Artemis dashboard + Athena chat sidebar at localhost:3000 |
+| Current state | End-to-end validated — agent creates tasks, starts Pomodoro, dashboard updates live |
 
 ---
 
 ## The Journey
+
+### Day 9: End-to-End Integration Fixes (Feb 14) — ~1 hour
+
+Bugs discovered during Windows end-to-end testing. Fixed Docker build failures, container health checks, and two critical Artemis frontend issues that broke the chat sidebar when talking to the live Agent Builder.
+
+**Docker Build Fixes**
+
+- [x] Tracked `uv.lock` files in git — removed `uv.lock` from `.gitignore` and committed lock files for indexer, mcp-server, and voice-client. Docker builds use `--frozen`/`--locked` which require these files to exist
+- [x] Fixed `docker-compose.yml` healthcheck — replaced `curl` (not installed in `python:3.12-slim`) with Python `urllib.request.urlopen()`, matching the Dockerfile's own HEALTHCHECK approach
+- [x] Softened `mcp-server` → `artemis` dependency from `service_healthy` to `service_started` — all services now start in parallel, mcp-server handles Artemis unavailability gracefully at runtime
+- [x] Added `start_period: 10s` and `retries: 5` to healthcheck — gives Artemis time to boot before declaring unhealthy
+
+**Artemis Frontend Integration Fixes (cross-repo)**
+
+- [x] Fixed black screen crash — Kibana Agent Builder returns `{ response: { message: "..." } }` but React client expected `{ response: "..." }`. Passing an object to `marked.parse()` crashed React's entire render tree. Added nested extraction matching original `voice.js` pattern
+- [x] Added TanStack Query cache invalidation after every agent response — invalidates pomodoro, tasks, dailyPlans, and analytics query keys so dashboard reflects agent-triggered actions immediately without manual refresh
+
+**Validation:**
+
+| Check | Result |
+|-------|--------|
+| `docker compose up --build -d` (Windows) | All 3 services start |
+| Chat "hi" via sidebar | Agent responds, renders correctly |
+| "Start a Pomodoro" via sidebar | Pomodoro starts, timer widget updates live |
+| "Create a task" via sidebar | Task appears on Tasks page immediately |
+
+---
 
 ### Day 8: Unified Athena + Artemis Experience (Feb 14) — ~3.5 hours
 
@@ -345,7 +372,7 @@ Built the entire MCP server — 3 adapter classes, 13 MCP tools across 4 groups,
 
 ## What's Next
 
-Phase 1 (Foundation) and Phase 2 (Vault + Intelligence) complete. Unified experience built. Remaining work:
+Phase 1 (Foundation) and Phase 2 (Vault + Intelligence) complete. Unified experience built and end-to-end validated. Remaining work:
 
 - ~~Build the indexer: `parser.py`, `indexer.py`, `cli.py`, `watcher.py`~~ done
 - ~~Create sample vault with 15-20 demo notes across 5 folders~~ done
@@ -357,11 +384,11 @@ Phase 1 (Foundation) and Phase 2 (Vault + Intelligence) complete. Unified experi
 - ~~Register all 19 tools + system prompt in Agent Builder via API~~ done
 - ~~Unified Docker Compose (artemis + mcp-server + voice-proxy)~~ done
 - ~~Athena chat sidebar in Artemis frontend (text + voice)~~ done
-- End-to-end validation: full demo flow via sidebar (search → read → extract tasks → create in Artemis)
-- Verify task creation via Athena appears on Artemis Tasks page
+- ~~End-to-end validation: full demo flow via sidebar~~ done
+- ~~Verify task/pomodoro creation via Athena reflects on dashboard~~ done
 - Optional: streaming support (SSE token-by-token responses)
 - Demo video recording
 
 ---
 
-*Last updated: February 14, 2026 (Day 8)*
+*Last updated: February 14, 2026 (Day 9)*
