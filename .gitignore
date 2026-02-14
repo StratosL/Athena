@@ -15,7 +15,6 @@ venv/
 
 # UV
 .uv/
-uv.lock
 
 # Environment variables (secrets)
 .env
