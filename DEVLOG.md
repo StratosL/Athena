@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~11 hours (Days 1–9) |
+| Total time | ~12.5 hours (Days 1–10) |
 | Sub-projects | 4 (indexer, mcp-server, voice-client, agent-config) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 13 (3 vault + 7 Artemis + 1 knowledge + 2 research) |
@@ -21,11 +21,52 @@
 | Type checking | pyright in both sub-projects — 0 errors |
 | System prompt | 244 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails |
 | Agent Builder | Athena agent live — 19 tools (6 ES|QL + 13 MCP), 13k char system prompt |
-| Current state | End-to-end validated — agent creates tasks, starts Pomodoro, dashboard updates live |
+| Current state | Research complete — OpenClaw/NanoClaw patterns analyzed, implementation plan for memory + heartbeat ready |
 
 ---
 
 ## The Journey
+
+### Day 10: OpenClaw/NanoClaw Pattern Research (Feb 15) — ~1.5 hours
+
+Deep research session analyzing OpenClaw and NanoClaw projects for patterns to adopt in Athena. Spawned 4 parallel research agents to cover architecture, memory, security, and heartbeat systems. No code changes — research and documentation only.
+
+**Research Scope**
+
+- [x] OpenClaw agent architecture — gateway, bootstrap files, session model, 70+ skills
+- [x] OpenClaw memory system — SOUL.md/USER.md/MEMORY.md hierarchy, pre-compaction flush, hybrid search (70% vector / 30% BM25), session-memory hook
+- [x] NanoClaw secure variant — container isolation (Apple Container/Docker), CLAUDE.md-based memory per group, PreCompact conversation archiving, task scheduler
+- [x] Heartbeat patterns — OpenClaw's 30-min cron with HEARTBEAT_OK suppression, NanoClaw's idle timeout model, proactive agent reference project in `reference/`
+- [x] Elastic Agent Builder integration analysis — `configuration_overrides.systemPromptAddition` for memory injection, converse API for heartbeat
+
+**Key Findings**
+
+| Pattern | OpenClaw | Athena Equivalent |
+|---------|----------|-------------------|
+| SOUL.md (personality) | Workspace bootstrap file | `agent-config/system-prompt.md` (exists) |
+| USER.md (user identity) | Workspace bootstrap file | New — `vault: Meta/user-profile.md` |
+| MEMORY.md (decisions/lessons) | Workspace bootstrap file | New — `vault: Meta/memory.md` |
+| HEARTBEAT.md (proactive checklist) | Cron-triggered agent turn | New — APScheduler or cron calling converse API |
+| Daily memory logs | `memory/YYYY-MM-DD.md` | Obsidian Daily Notes (already supported) |
+| Session summaries | Hook on `/new` command | `save_conversation_summary` (already implemented) |
+
+**Decisions**
+
+- Memory files live in the Obsidian vault (`Meta/` folder) — stays in user's knowledge graph, editable in Obsidian
+- Memory injection via `configuration_overrides.systemPromptAddition` — no agent code changes needed
+- Heartbeat: cron script for hackathon, APScheduler service post-hackathon
+- Skills system deferred — MCP tools already provide modularity
+
+**Prioritization for remaining 12 days:**
+1. End-to-end validation (~2h)
+2. Memory files + injection (~4h)
+3. Demo video recording (~3h)
+4. Heartbeat service (~3h, if time allows)
+5. Artemis sidebar integration (~7-8h, post-hackathon)
+
+**Output:** `decisions/003-openclaw-patterns-research.md` (329 lines) — full ADR with research findings, mapping tables, feasibility matrix, and 4-step implementation plan.
+
+---
 
 ### Day 9: End-to-End Integration Fixes (Feb 14) — ~1 hour
 
@@ -372,23 +413,19 @@ Built the entire MCP server — 3 adapter classes, 13 MCP tools across 4 groups,
 
 ## What's Next
 
-Phase 1 (Foundation) and Phase 2 (Vault + Intelligence) complete. Unified experience built and end-to-end validated. Remaining work:
+Phases 1-2 complete. Unified experience built. OpenClaw/NanoClaw research done. Remaining work:
 
-- ~~Build the indexer: `parser.py`, `indexer.py`, `cli.py`, `watcher.py`~~ done
-- ~~Create sample vault with 15-20 demo notes across 5 folders~~ done
-- ~~Index sample vault and validate semantic search works end-to-end~~ done
-- ~~Build MCP server core: `server.py` (SSE transport), `artemis_client.py` (httpx wrapper), 7 Artemis tools~~ done
-- ~~Build vault MCP tools: `vault_query`, `vault_read`, `vault_manage` via VaultManager~~ done
-- ~~Configure Agent Builder: system prompt, ES|QL tools, setup guide~~ done
-- ~~Deploy MCP server via ngrok, register in Kibana~~ done
-- ~~Register all 19 tools + system prompt in Agent Builder via API~~ done
-- ~~Unified Docker Compose (artemis + mcp-server + voice-proxy)~~ done
-- ~~Athena chat sidebar in Artemis frontend (text + voice)~~ done
-- ~~End-to-end validation: full demo flow via sidebar~~ done
-- ~~Verify task/pomodoro creation via Athena reflects on dashboard~~ done
+- ~~Build the indexer, sample vault, MCP server, vault tools~~ done
+- ~~Configure Agent Builder, deploy via ngrok~~ done
+- ~~Unified Docker Compose + Artemis chat sidebar~~ done
+- ~~End-to-end validation via sidebar~~ done
+- ~~OpenClaw/NanoClaw pattern research~~ done (ADR-003)
+- End-to-end validation on Linux (voice client → agent → MCP → vault)
+- Memory system: `Meta/user-profile.md` + `Meta/memory.md` + injection via `configuration_overrides`
+- Demo video recording (while Elastic Cloud trial is active)
+- Heartbeat service (if time allows)
 - Optional: streaming support (SSE token-by-token responses)
-- Demo video recording
 
 ---
 
-*Last updated: February 14, 2026 (Day 9)*
+*Last updated: February 15, 2026 (Day 10)*
