@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~14 hours (Days 1–12) |
+| Total time | ~15 hours (Days 1–13) |
 | Sub-projects | 4 (indexer, mcp-server, voice-client, agent-config) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 13 (3 vault + 7 Artemis + 1 knowledge + 2 research) |
@@ -26,6 +26,32 @@
 ---
 
 ## The Journey
+
+### Day 13: Monorepo Strategy Research + Housekeeping (Feb 15) — ~1 hour
+
+Researched how to merge the Artemis and Athena repositories into a single monorepo for hackathon submission and long-term maintainability. Evaluated 5 approaches (Bazel/Nx, subtree/submodule, file copy, fresh start, uv workspaces) against industry practices at Google, Meta, and startups. Decision: two-phase uv workspaces approach — Phase A (subtree merge, 2-4h) before deadline, Phase B (workspace unification) after hackathon.
+
+**Research & Decisions**
+
+- [x] Evaluated 5 monorepo strategies: full monorepo (Bazel/Nx/Pants), git subtree/submodule, file copy, fresh start, uv workspaces + Docker Compose
+- [x] Researched industry patterns — Google (Bazel), Meta (Buck2), Microsoft (Rush), Apache Airflow (uv workspaces), startup practices
+- [x] Chose two-phase approach: Phase A brings Artemis into Athena via `git subtree add` with path updates; Phase B adds root `pyproject.toml` with `[tool.uv.workspace]` post-hackathon
+- [x] Created `decisions/004-monorepo-merge-strategy.md` — full ADR with target directory structure, step-by-step implementation plan, risk assessment, and rejected alternatives
+
+**Housekeeping**
+
+- [x] Archived 2 completed plans to `.agents/plans/archived/`: "Unified Athena + Artemis Experience (4 sessions)" (Days 8-9), "Add Artemis Frontend to Docker Compose" (Day 12)
+- [x] Plans directory cleaned — all 10 historical plans now in `archived/`
+
+**Key Additions**
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `decisions/004-monorepo-merge-strategy.md` | 210 | ADR for Artemis→Athena monorepo merge strategy |
+
+**Result:** Clear decision and implementation plan for merging repos. Phase A (subtree + path updates) is next actionable item, estimated 2-4 hours.
+
+---
 
 ### Day 12: Artemis Frontend in Docker Compose (Feb 15) — ~30 min
 
@@ -484,6 +510,8 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 - ~~OpenClaw/NanoClaw pattern research~~ done (ADR-003)
 - ~~End-to-end validation on Linux~~ done (Day 11)
 - ~~Artemis frontend in Docker Compose~~ done (Day 12)
+- ~~Monorepo strategy research~~ done (ADR-004, Day 13)
+- Monorepo merge: Phase A — `git subtree add` Artemis into Athena, update docker-compose paths (ADR-004)
 - Memory system: `Meta/user-profile.md` + `Meta/memory.md` + injection via `configuration_overrides`
 - Demo video recording (while Elastic Cloud trial is active)
 - Heartbeat service (if time allows)
@@ -491,4 +519,4 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 
 ---
 
-*Last updated: February 15, 2026 (Day 12)*
+*Last updated: February 15, 2026 (Day 13)*
