@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~13.5 hours (Days 1–11) |
+| Total time | ~14 hours (Days 1–12) |
 | Sub-projects | 4 (indexer, mcp-server, voice-client, agent-config) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 13 (3 vault + 7 Artemis + 1 knowledge + 2 research) |
@@ -21,11 +21,36 @@
 | Type checking | pyright in both sub-projects — 0 errors |
 | System prompt | 244 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails |
 | Agent Builder | Athena agent live — 19 tools (6 ES|QL + 13 MCP), 13k char system prompt |
-| Current state | Linux E2E validated — all 13 MCP tools, vault, ES, voice proxy, Docker Compose confirmed working |
+| Current state | Full-stack Docker Compose — 4 services (artemis, mcp-server, voice-proxy, artemis-frontend), single `docker compose up` |
 
 ---
 
 ## The Journey
+
+### Day 12: Artemis Frontend in Docker Compose (Feb 15) — ~30 min
+
+Added the Artemis React frontend as a fourth Docker Compose service, so the entire stack starts with a single `docker compose up`. Created a custom nginx config that proxies `/athena/*` requests to the voice-proxy, matching the Vite dev proxy behavior.
+
+**Changes**
+
+- [x] Created `nginx.conf` — SPA routing with `try_files`, reverse proxy `location ^~ /athena/` → `voice-proxy:3001/api/`, static asset caching with 1-year expiry for hashed bundles
+- [x] Added `artemis-frontend` service to `docker-compose.yml` — builds from `../Artemis/frontend` Dockerfile, injects `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `VITE_API_URL` as build args, volume-mounts custom nginx config over the Dockerfile's inline default
+- [x] Updated `.env.example` — added Supabase variables and `ARTEMIS_FRONTEND_PATH`
+
+**Code Review**
+
+- [x] Verified proxy route chain: frontend `BASE_URL="/athena"` → nginx `/athena/` → `voice-proxy:3001/api/` → voice-proxy routes (`/api/chat`, `/api/transcribe`, `/api/speak`, `/api/health`)
+- [x] Applied `^~` modifier to nginx `/athena/` location — prevents regex static asset location from intercepting proxy requests
+
+**Key Additions**
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `nginx.conf` | 25 | SPA routing + `/athena` reverse proxy + static asset caching |
+
+**Result:** `docker compose up --build` starts 4 services. `http://localhost:3000` serves the full Artemis dashboard with Athena chat sidebar, voice, and all features.
+
+---
 
 ### Day 11: End-to-End Validation on Linux (Feb 15) — ~1 hour
 
@@ -458,6 +483,7 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 - ~~End-to-end validation via sidebar~~ done
 - ~~OpenClaw/NanoClaw pattern research~~ done (ADR-003)
 - ~~End-to-end validation on Linux~~ done (Day 11)
+- ~~Artemis frontend in Docker Compose~~ done (Day 12)
 - Memory system: `Meta/user-profile.md` + `Meta/memory.md` + injection via `configuration_overrides`
 - Demo video recording (while Elastic Cloud trial is active)
 - Heartbeat service (if time allows)
@@ -465,4 +491,4 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 
 ---
 
-*Last updated: February 15, 2026 (Day 11)*
+*Last updated: February 15, 2026 (Day 12)*
