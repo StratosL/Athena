@@ -32,25 +32,19 @@ class VaultEventHandler(FileSystemEventHandler):
         src = str(event.src_path)
         if not event.is_directory and self._is_markdown(src):
             logger.info("File created: %s", src)
-            asyncio.run_coroutine_threadsafe(
-                self.indexer.index_single_note(Path(src)), self.loop
-            )
+            asyncio.run_coroutine_threadsafe(self.indexer.index_single_note(Path(src)), self.loop)
 
     def on_modified(self, event: FileSystemEvent) -> None:
         src = str(event.src_path)
         if not event.is_directory and self._is_markdown(src):
             logger.info("File modified: %s", src)
-            asyncio.run_coroutine_threadsafe(
-                self.indexer.index_single_note(Path(src)), self.loop
-            )
+            asyncio.run_coroutine_threadsafe(self.indexer.index_single_note(Path(src)), self.loop)
 
     def on_deleted(self, event: FileSystemEvent) -> None:
         src = str(event.src_path)
         if not event.is_directory and self._is_markdown(src):
             logger.info("File deleted: %s", src)
-            asyncio.run_coroutine_threadsafe(
-                self.indexer.delete_note(Path(src)), self.loop
-            )
+            asyncio.run_coroutine_threadsafe(self.indexer.delete_note(Path(src)), self.loop)
 
     def on_moved(self, event: FileSystemEvent) -> None:
         # Delete old path, index new path
@@ -62,9 +56,7 @@ class VaultEventHandler(FileSystemEventHandler):
 
             if src_md:
                 logger.info("File moved from: %s", src)
-                asyncio.run_coroutine_threadsafe(
-                    self.indexer.delete_note(Path(src)), self.loop
-                )
+                asyncio.run_coroutine_threadsafe(self.indexer.delete_note(Path(src)), self.loop)
             if dest_md:
                 logger.info("File moved to: %s", dest)
                 asyncio.run_coroutine_threadsafe(

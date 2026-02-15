@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~12.5 hours (Days 1–10) |
+| Total time | ~13.5 hours (Days 1–11) |
 | Sub-projects | 4 (indexer, mcp-server, voice-client, agent-config) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 13 (3 vault + 7 Artemis + 1 knowledge + 2 research) |
@@ -21,11 +21,48 @@
 | Type checking | pyright in both sub-projects — 0 errors |
 | System prompt | 244 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails |
 | Agent Builder | Athena agent live — 19 tools (6 ES|QL + 13 MCP), 13k char system prompt |
-| Current state | Research complete — OpenClaw/NanoClaw patterns analyzed, implementation plan for memory + heartbeat ready |
+| Current state | Linux E2E validated — all 13 MCP tools, vault, ES, voice proxy, Docker Compose confirmed working |
 
 ---
 
 ## The Journey
+
+### Day 11: End-to-End Validation on Linux (Feb 15) — ~1 hour
+
+Systematic validation of every component on Linux. Tested indexer, MCP server (local + Docker), voice proxy, Artemis integration, ES write-back, web search, and full agent chat loop through Kibana. Fixed 3 bugs found during testing.
+
+**Validation Results**
+
+| Component | Test | Result |
+|-----------|------|--------|
+| Indexer | `parse_vault()` — 17 notes | PASS |
+| Indexer | `athena-index index` — ES bulk sync | PASS (17 skipped, checksums match) |
+| MCP Server | Streamable HTTP initialize + tools/list (13 tools) | PASS |
+| MCP Server | `vault_query` → `list_structure` (17 notes) | PASS |
+| MCP Server | `vault_read` → `read_note` (full content + metadata) | PASS |
+| MCP Server | `vault_query` → `search_content` "API refactoring" | PASS (#1 hit correct) |
+| MCP Server | `save_conversation_summary` → ES write-back | PASS |
+| MCP Server | `web_search` → Brave API | PASS (3 results) |
+| MCP Server | `artemis_list_tasks` (Artemis down) — graceful error | PASS |
+| Voice Proxy | `/api/health`, static files, `/api/chat` → Kibana | PASS |
+| Voice Proxy | Full agent loop (query → tools → rich response) | PASS |
+| Docker Compose | `docker compose config` | PASS (after fix) |
+| Docker Compose | Build all 3 images (artemis, mcp-server, voice-proxy) | PASS |
+| Docker Compose | All 3 containers start and respond | PASS |
+| Docker (MCP→Artemis) | `artemis_list_tasks` through container network | PASS |
+| Docker (MCP→Vault) | `vault_query` with mounted volume (17 notes) | PASS |
+
+**Bugs Fixed**
+
+- [x] `indexer/src/config.py` — `env_file` only looked for `.env` in CWD; fixed to `(".env", "../.env")` matching MCP server pattern
+- [x] `docker-compose.yml` — Artemis `env_file` pointed to `../Artemis/backend/.env` but actual file is at `../Artemis/.env`; added `ARTEMIS_ENV_FILE` variable
+- [x] `docker-compose.yml` — Vault volume mount `"${VAULT_PATH:-.}/sample-vault:/vault:rw"` would double-nest when `VAULT_PATH` was set; fixed to `"${VAULT_PATH:-./sample-vault}:/vault:rw"`
+
+**Known Issue**
+
+- Agent in Elastic Cloud still references old ngrok URL — when starting a new tunnel, MCP connector URL must be updated in Kibana (documented in `deployment-gotchas.md`)
+
+---
 
 ### Day 10: OpenClaw/NanoClaw Pattern Research (Feb 15) — ~1.5 hours
 
@@ -413,14 +450,14 @@ Built the entire MCP server — 3 adapter classes, 13 MCP tools across 4 groups,
 
 ## What's Next
 
-Phases 1-2 complete. Unified experience built. OpenClaw/NanoClaw research done. Remaining work:
+Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining work:
 
 - ~~Build the indexer, sample vault, MCP server, vault tools~~ done
 - ~~Configure Agent Builder, deploy via ngrok~~ done
 - ~~Unified Docker Compose + Artemis chat sidebar~~ done
 - ~~End-to-end validation via sidebar~~ done
 - ~~OpenClaw/NanoClaw pattern research~~ done (ADR-003)
-- End-to-end validation on Linux (voice client → agent → MCP → vault)
+- ~~End-to-end validation on Linux~~ done (Day 11)
 - Memory system: `Meta/user-profile.md` + `Meta/memory.md` + injection via `configuration_overrides`
 - Demo video recording (while Elastic Cloud trial is active)
 - Heartbeat service (if time allows)
@@ -428,4 +465,4 @@ Phases 1-2 complete. Unified experience built. OpenClaw/NanoClaw research done. 
 
 ---
 
-*Last updated: February 15, 2026 (Day 10)*
+*Last updated: February 15, 2026 (Day 11)*

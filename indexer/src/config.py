@@ -21,7 +21,11 @@ class IndexerSettings(BaseSettings):
     # Logging
     log_level: str = "INFO"
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
+    model_config = {
+        "env_file": (".env", "../.env"),
+        "env_file_encoding": "utf-8",
+        "extra": "ignore",
+    }
 
 
 def get_settings() -> IndexerSettings:
