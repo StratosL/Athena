@@ -129,7 +129,33 @@ docker compose --profile tunnel up --build
 # ngrok inspector at http://localhost:4040 — copy the public URL from there
 ```
 
-### Step 3: Configure Agent Builder in Kibana
+### Option C: Automated Setup (recommended)
+
+After filling in `.env`, run one command to configure Supabase, Elasticsearch, and Agent Builder:
+
+```bash
+git clone https://github.com/StratosL/Athena.git
+cd Athena
+cp .env.example .env
+# Edit .env with your credentials
+
+./setup.sh              # Linux/macOS
+setup.bat               # Windows
+```
+
+This validates credentials, creates database tables, indexes the vault, registers all 19 tools in Agent Builder, and creates the Athena agent. Run individual phases with `--phase`:
+
+```bash
+./setup.sh --phase validate        # check credentials + connectivity
+./setup.sh --phase supabase        # create database tables
+./setup.sh --phase elasticsearch   # create indices + index vault
+./setup.sh --phase agent-builder   # register tools + create agent in Kibana
+./setup.sh --phase verify          # end-to-end health checks
+```
+
+Then start services: `docker compose --profile tunnel up --build`
+
+### Step 3: Configure Agent Builder in Kibana (manual alternative)
 
 This is the one-time setup that connects everything together. See [`agent-config/setup-guide.md`](agent-config/setup-guide.md) for detailed instructions.
 

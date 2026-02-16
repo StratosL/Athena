@@ -11,8 +11,8 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~21.5 hours (Days 1–18) |
-| Sub-projects | 7 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend) |
+| Total time | ~23 hours (Days 1–19) |
+| Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 13 (3 vault + 7 Artemis + 1 knowledge + 2 research) |
 | ES|QL tools defined | 5 + 1 index search |
@@ -21,11 +21,70 @@
 | Type checking | pyright in both sub-projects — 0 errors |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 19 tools (6 ES|QL + 13 MCP), 14.5k char system prompt (synced) |
-| Current state | Heartbeat service built — proactive agent check-ins via APScheduler |
+| Current state | Setup automation — one-command bootstrap via `./setup.sh` |
 
 ---
 
 ## The Journey
+
+### Day 19: Setup Automation (Feb 16) — ~1.5 hours
+
+Built a one-command project bootstrap (`./setup.sh`) that replaces the 5+ manual setup steps across Supabase, Elasticsearch, and Agent Builder. After filling in `.env`, a single command validates credentials, creates database tables, indexes the vault, registers all 19 tools in Kibana, creates the Athena agent, and verifies everything end-to-end.
+
+**New Sub-project: `scripts/`**
+
+- [x] `scripts/config.py` — Shared `SetupConfig` (pydantic-settings) loading all env vars from root `.env`
+- [x] `scripts/validate_env.py` — Phase 1: checks required vars are set, tests ES + Supabase connectivity, warns on missing optional vars (voice, research, ngrok)
+- [x] `scripts/setup_supabase.py` — Phase 2a: executes SQL migration via `psycopg` (pure Python Postgres driver), falls back to printing SQL + Supabase SQL Editor URL if `SUPABASE_DB_URL` not set, verifies tables via REST API
+- [x] `scripts/setup_elasticsearch.py` — Phase 2b: runs `uv sync` + `athena-index setup-indices` + `athena-index index` via subprocess, verifies note count
+- [x] `scripts/setup_agent_builder.py` — Phase 2c: creates ES|QL + index search tools from JSON files, creates MCP connector + 13 MCP tools (if ngrok reachable), creates/updates Athena agent with system prompt and all tool IDs. Handles "already exists" (HTTP 400/409) gracefully
+- [x] `scripts/verify.py` — Phase 3: end-to-end health check table (Supabase tables, ES index, Agent Builder tools, agent, MCP connector, Docker services)
+- [x] `scripts/setup.py` — Main orchestrator with `--phase` CLI flag for running individual phases
+
+**SQL Migration**
+
+- [x] Created `supabase/migrations/001_initial_schema.sql` — 3 tables (`tasks`, `daily_plans`, `pomodoro_sessions`), `updated_at` trigger function, `increment_pomodoro_count` RPC, RLS policies, role grants. All idempotent (`IF NOT EXISTS`, `CREATE OR REPLACE`)
+
+**Shell Entry Points**
+
+- [x] `setup.sh` — Linux/macOS: checks `.env`, Python, `uv`, installs deps, delegates to Python orchestrator
+- [x] `setup.bat` — Windows equivalent
+
+**Key Additions**
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `scripts/pyproject.toml` | 14 | Sub-project: httpx, pydantic-settings, rich, psycopg |
+| `scripts/config.py` | 35 | Shared SetupConfig (pydantic-settings) |
+| `scripts/validate_env.py` | 85 | Credential + connectivity validation |
+| `scripts/setup_supabase.py` | 70 | Postgres DDL execution + REST API verification |
+| `scripts/setup_elasticsearch.py` | 80 | ES indices + vault indexing via subprocess |
+| `scripts/setup_agent_builder.py` | 220 | Kibana API: tools + connector + agent |
+| `scripts/verify.py` | 105 | End-to-end health check table |
+| `scripts/setup.py` | 95 | Main orchestrator with CLI |
+| `supabase/migrations/001_initial_schema.sql` | 105 | Full database schema |
+| `setup.sh` | 25 | Linux/macOS entry point |
+| `setup.bat` | 28 | Windows entry point |
+
+**API Discoveries**
+
+- `GET /api/agent_builder/tools` returns `{"results": [...]}` (not a flat array)
+- Agent tools are under `configuration.tools`, not top-level `tools`
+- "Already exists" returns HTTP 400 with message, not HTTP 409
+
+**Validation**
+
+| Check | Result |
+|-------|--------|
+| `./setup.sh --phase validate` | All credentials valid, ES + Supabase reachable |
+| `./setup.sh --phase supabase` | 3/3 tables verified |
+| `./setup.sh --phase elasticsearch` | 20 notes indexed |
+| `./setup.sh --phase agent-builder` | 6 tools (exists), agent updated |
+| `./setup.sh --phase verify` | All critical checks pass |
+| Full `./setup.sh` pipeline | End-to-end success |
+| Idempotency (second run) | Identical output, no errors |
+
+---
 
 ### Day 18: Heartbeat Service (Feb 16) — ~2 hours
 
@@ -700,9 +759,10 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 - ~~Memory system~~ done (Day 16) — profile + memory files, voice proxy injection, daily note write-back
 - ~~Re-sync system prompt in Agent Builder~~ done (Day 17) — 14.5k chars, memory guidance live
 - ~~Heartbeat service~~ done (Day 18) — APScheduler + converse API, HEARTBEAT_OK suppression, daily note alerts
+- ~~Setup automation~~ done (Day 19) — `./setup.sh` one-command bootstrap, SQL migration, Kibana API automation
 - Demo video recording (while Elastic Cloud trial is active)
 - Optional: streaming support (SSE token-by-token responses)
 
 ---
 
-*Last updated: February 16, 2026 (Day 18)*
+*Last updated: February 16, 2026 (Day 19)*
