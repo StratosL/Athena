@@ -1,0 +1,86 @@
+[project]
+name = "productivity-app-backend"
+version = "0.1.0"
+description = "Productivity App Backend - FastAPI with VSA"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "supabase>=2.0.0",
+    "structlog>=24.0.0",
+    "python-dotenv>=1.0.0",
+    "httpx>=0.27.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=5.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "ANN",    # flake8-annotations
+    "S",      # flake8-bandit (security)
+    "DTZ",    # flake8-datetimez
+    "RUF",    # Ruff-specific
+    "ARG",    # flake8-unused-arguments
+    "PTH",    # flake8-use-pathlib
+]
+ignore = [
+    "S311",   # Standard random is fine for non-crypto
+    "E501",   # Line length handled by formatter
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "ANN", "ARG001", "D", "E731"]
+"test_*.py" = ["S101", "ANN", "ARG001", "D", "E731"]
+"__init__.py" = ["F401"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["app", "tests"]
+markers = [
+    "integration: marks tests requiring real database",
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.408",
+]

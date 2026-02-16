@@ -53,6 +53,12 @@ Thumbs.db
 # Reference projects (tracked but don't pollute searches)
 # reference/ is tracked — do not add it here
 
+# Node / Frontend
+node_modules/
+npm-debug.log*
+frontend/dist/
+*.tsbuildinfo
+
 # Hackathon artifacts that shouldn't be committed
 devpost/screenshots/*.png
 devpost/screenshots/*.jpg

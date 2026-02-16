@@ -12,11 +12,11 @@ services:
   # --- Artemis Backend ---
   artemis:
     build:
-      context: ${ARTEMIS_PATH:-../Artemis/backend}
+      context: ./services/artemis-backend
     ports:
       - "8000:8000"
     env_file:
-      - ${ARTEMIS_ENV_FILE:-../Artemis/.env}
+      - .env
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
@@ -58,7 +58,7 @@ services:
   # --- Artemis Frontend ---
   artemis-frontend:
     build:
-      context: ${ARTEMIS_FRONTEND_PATH:-../Artemis/frontend}
+      context: ./frontend
       args:
         - SUPABASE_URL=${SUPABASE_URL:-}
         - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}

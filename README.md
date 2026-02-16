@@ -61,7 +61,7 @@ User <-> Voice Layer (STT/TTS) <-> Agent Builder (Athena) <-> Elasticsearch (ELS
 - **[Elastic Cloud](https://cloud.elastic.co/registration?cta=hackathon)** account — free 14-day Serverless trial
 - **[ngrok](https://ngrok.com/)** — free account to expose MCP server to Elastic Cloud
 - **[OpenAI API key](https://platform.openai.com)** — for voice (Whisper + TTS) and optionally research
-- **[Artemis](https://github.com/StratosL/Artemis)** running locally on port 8000 (optional — Athena handles it being unavailable)
+- **Artemis** is included in this repository (`services/artemis-backend/` + `frontend/`)
 
 ---
 
@@ -167,35 +167,22 @@ curl -s "$ELASTIC_URL/athena-notes/_count" \
 
 ```
 Athena/
-├── indexer/                  # Obsidian -> Elasticsearch sync (CLI)
+├── services/
+│   └── artemis-backend/      # Artemis FastAPI backend (Supabase + tasks)
+│       ├── Dockerfile
+│       ├── pyproject.toml
+│       └── app/
+├── frontend/                  # Artemis React frontend (Vite + Tailwind + ChatSidebar)
+│   ├── Dockerfile
+│   ├── package.json
 │   └── src/
-│       ├── parser.py         # .md -> ParsedNote (frontmatter + checksum)
-│       ├── indexer.py        # Bulk index with checksum dedup
-│       ├── watcher.py        # Live filesystem sync via watchdog
-│       └── cli.py            # CLI: setup-indices, index, watch
-│
-├── mcp-server/               # Unified MCP server (13 tools)
-│   └── src/
-│       ├── server.py         # FastMCP + Streamable HTTP setup
-│       ├── vault_manager.py  # Vault filesystem CRUD + path security
-│       ├── artemis_client.py # Async HTTP wrapper for Artemis API
-│       ├── es_client.py      # Elasticsearch knowledge write-back
-│       └── tools/            # vault.py, artemis.py, knowledge.py, research.py
-│
-├── voice-client/             # Voice-enabled web client + proxy server
-│   ├── serve.py              # aiohttp proxy (chat, STT, TTS)
-│   ├── index.html            # Single-page app
-│   ├── voice.js              # MediaRecorder + Whisper + TTS integration
-│   └── style.css
-│
-├── agent-config/             # Agent Builder configuration
-│   ├── system-prompt.md      # Athena persona (244 lines)
-│   ├── setup-guide.md        # Step-by-step Kibana setup
-│   └── tools/                # 6 ES|QL / index search tool definitions
-│
-├── sample-vault/             # Demo Obsidian vault (17 notes, 5 folders)
-├── docker-compose.yml        # Artemis + MCP server + voice proxy + ngrok
-└── .env.example              # All configuration variables
+├── indexer/                   # Obsidian -> Elasticsearch sync (CLI)
+├── mcp-server/                # Unified MCP server (13 tools)
+├── voice-client/              # Voice-enabled web client + proxy server
+├── agent-config/              # Agent Builder configuration
+├── sample-vault/              # Demo Obsidian vault (17 notes, 5 folders)
+├── docker-compose.yml         # All services, one-command startup
+└── .env.example               # All configuration variables
 ```
 
 ---

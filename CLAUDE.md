@@ -23,8 +23,11 @@ Athena is a conversational AI agent built on **Elastic Agent Builder** that brid
 Athena/
 ├── CLAUDE.md              ← you are here
 ├── PRD.md                 ← full architecture, tools, APIs, phases
-├── .claude/commands/      ← slash commands (create-prd, commit, etc.)
+├── .claude/commands/      ← slash commands
 │
+├── services/
+│   └── artemis-backend/   ← Artemis FastAPI backend (merged from Artemis repo)
+├── frontend/              ← Artemis React frontend (merged from Artemis repo)
 ├── indexer/               ← Obsidian → Elasticsearch sync (CLI tool)
 ├── mcp-server/            ← Unified MCP server (vault + artemis + research tools)
 ├── voice-client/          ← Thin HTML/JS voice interface
