@@ -11,8 +11,8 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~15 hours (Days 1–13) |
-| Sub-projects | 4 (indexer, mcp-server, voice-client, agent-config) |
+| Total time | ~16 hours (Days 1–14) |
+| Sub-projects | 6 (indexer, mcp-server, voice-client, agent-config, artemis-backend, frontend) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 13 (3 vault + 7 Artemis + 1 knowledge + 2 research) |
 | ES|QL tools defined | 5 + 1 index search |
@@ -21,11 +21,43 @@
 | Type checking | pyright in both sub-projects — 0 errors |
 | System prompt | 244 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails |
 | Agent Builder | Athena agent live — 19 tools (6 ES|QL + 13 MCP), 13k char system prompt |
-| Current state | Full-stack Docker Compose — 4 services (artemis, mcp-server, voice-proxy, artemis-frontend), single `docker compose up` |
+| Current state | Monorepo — Artemis merged into Athena, 4 Docker services, single `git clone` + `docker compose up` |
 
 ---
 
 ## The Journey
+
+### Day 14: Monorepo Merge — Artemis into Athena (Feb 16) — ~1 hour
+
+Executed ADR-004 Phase A: merged the Artemis backend and frontend into the Athena monorepo. Anyone can now `git clone` this single repo and run `docker compose up` — no sibling directory setup required.
+
+**Monorepo Merge**
+
+- [x] Copied 58 tracked files from `Artemis/backend/` to `services/artemis-backend/` using `git ls-files` (no `.venv`, `__pycache__`, or cache dirs)
+- [x] Copied 122 tracked files from `Artemis/frontend/` to `frontend/` using same method
+- [x] Updated `docker-compose.yml` — replaced `${ARTEMIS_PATH:-../Artemis/backend}` with `./services/artemis-backend`, `${ARTEMIS_ENV_FILE:-../Artemis/.env}` with `.env`, `${ARTEMIS_FRONTEND_PATH:-../Artemis/frontend}` with `./frontend`
+- [x] Updated `.env.example` — removed `ARTEMIS_FRONTEND_PATH` variable, consolidated Artemis vars into single section with `CORS_ORIGINS`
+- [x] Updated `.gitignore` — added `node_modules/`, `npm-debug.log*`, `frontend/dist/`, `*.tsbuildinfo`
+- [x] Updated `README.md` — Artemis listed as included (not external prerequisite), project structure reflects `services/artemis-backend/` + `frontend/`
+- [x] Updated `CLAUDE.md` — project structure shows new layout
+
+**Validation**
+
+| Check | Result |
+|-------|--------|
+| Backend file count | 58 (exact match) |
+| Frontend file count | 122 (exact match) |
+| `docker compose config` | PASS |
+| `docker compose build artemis` | PASS |
+| `docker compose build artemis-frontend` | PASS |
+| No `../Artemis` references in config | PASS |
+| Zero source code changes | Confirmed — no .py or .tsx files modified |
+
+**Key decision:** Used `git ls-files` + copy instead of `git subtree add` (ADR-004 mentioned subtree, but it imports the entire Artemis repo — we only need 2 subdirectories). Commit message preserves provenance (Artemis commit `4ee701f`).
+
+**Result:** Single-repo, single-command deployment. ADR-004 Phase A complete. Phase B (uv workspaces unification) deferred to post-hackathon.
+
+---
 
 ### Day 13: Monorepo Strategy Research + Housekeeping (Feb 15) — ~1 hour
 
@@ -511,7 +543,7 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 - ~~End-to-end validation on Linux~~ done (Day 11)
 - ~~Artemis frontend in Docker Compose~~ done (Day 12)
 - ~~Monorepo strategy research~~ done (ADR-004, Day 13)
-- Monorepo merge: Phase A — `git subtree add` Artemis into Athena, update docker-compose paths (ADR-004)
+- ~~Monorepo merge: Phase A~~ done (Day 14) — Artemis copied into `services/artemis-backend/` + `frontend/`
 - Memory system: `Meta/user-profile.md` + `Meta/memory.md` + injection via `configuration_overrides`
 - Demo video recording (while Elastic Cloud trial is active)
 - Heartbeat service (if time allows)
@@ -519,4 +551,4 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 
 ---
 
-*Last updated: February 15, 2026 (Day 13)*
+*Last updated: February 16, 2026 (Day 14)*

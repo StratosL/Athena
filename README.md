@@ -12,7 +12,7 @@
 
 ---
 
-Athena is a conversational AI agent built on [Elastic Agent Builder](https://www.elastic.co/elasticsearch/agent-builder) that bridges your [Obsidian](https://obsidian.md) vault with [Artemis](https://github.com/StratosL/Artemis), a productivity app. It searches your notes semantically, reads and writes to your vault in real-time, extracts tasks with Eisenhower classification, plans your day using the 1-3-5 rule, and remembers past conversations — all through natural language, text or voice.
+Athena is a conversational AI agent built on [Elastic Agent Builder](https://www.elastic.co/elasticsearch/agent-builder) that bridges your [Obsidian](https://obsidian.md) vault with [Artemis](https://github.com/StratosL/Artemis) (included), a productivity app. It searches your notes semantically, reads and writes to your vault in real-time, extracts tasks with Eisenhower classification, plans your day using the 1-3-5 rule, and remembers past conversations — all through natural language, text or voice.
 
 ### What's Different
 
@@ -23,7 +23,7 @@ Athena is a conversational AI agent built on [Elastic Agent Builder](https://www
 
 ### Current State
 
-19 tools registered in Agent Builder (6 ES|QL + 13 MCP), 17-note sample vault indexed with ELSER semantic search, voice client with proxy server, Docker Compose for one-command deployment. End-to-end validated on Linux.
+Self-contained monorepo — Artemis backend + frontend included. 19 tools registered in Agent Builder (6 ES|QL + 13 MCP), 17-note sample vault indexed with ELSER semantic search, voice client with proxy server. Clone and `docker compose up`.
 
 ---
 
@@ -57,7 +57,7 @@ User <-> Voice Layer (STT/TTS) <-> Agent Builder (Athena) <-> Elasticsearch (ELS
 ## Prerequisites
 
 - **Python 3.12+** and [uv](https://docs.astral.sh/uv/)
-- **Docker** (optional — for containerized deployment)
+- **Docker** and **Docker Compose** (recommended — runs all services with one command)
 - **[Elastic Cloud](https://cloud.elastic.co/registration?cta=hackathon)** account — free 14-day Serverless trial
 - **[ngrok](https://ngrok.com/)** — free account to expose MCP server to Elastic Cloud
 - **[OpenAI API key](https://platform.openai.com)** — for voice (Whisper + TTS) and optionally research
@@ -105,16 +105,22 @@ cd voice-client && uv sync
 uv run python serve.py              # starts on port 3001
 ```
 
-### Option B: Run with Docker Compose
+### Option B: Run with Docker Compose (recommended)
 
 ```bash
+git clone https://github.com/StratosL/Athena.git
+cd Athena
 cp .env.example .env
-# Edit .env with your credentials
+# Edit .env with your credentials (ELASTIC_URL, ELASTIC_API_KEY, SUPABASE_URL, SUPABASE_ANON_KEY)
 
-docker compose up --build           # starts Artemis + MCP server + voice proxy
+docker compose up --build
+# Artemis backend  → http://localhost:8000
+# Artemis frontend → http://localhost:3000
+# MCP server       → http://localhost:8001
+# Voice proxy      → http://localhost:3001
 ```
 
-To also start an ngrok tunnel:
+To also start an ngrok tunnel (needed for Elastic Agent Builder):
 
 ```bash
 # Add your ngrok auth token to .env:
@@ -123,7 +129,7 @@ docker compose --profile tunnel up --build
 # ngrok inspector at http://localhost:4040 — copy the public URL from there
 ```
 
-### Step 5: Configure Agent Builder in Kibana
+### Step 3: Configure Agent Builder in Kibana
 
 This is the one-time setup that connects everything together. See [`agent-config/setup-guide.md`](agent-config/setup-guide.md) for detailed instructions.
 
@@ -196,6 +202,8 @@ All settings via environment variables (`.env` file). See [`.env.example`](.env.
 | `ELASTIC_URL` | Yes | — | Elasticsearch Serverless endpoint |
 | `ELASTIC_API_KEY` | Yes | — | Elasticsearch API key |
 | `VAULT_PATH` | Yes | `/vault` | Path to Obsidian vault |
+| `SUPABASE_URL` | For Artemis | — | Supabase project URL |
+| `SUPABASE_ANON_KEY` | For Artemis | — | Supabase anonymous key |
 | `ARTEMIS_BASE_URL` | No | `http://localhost:8000` | Artemis backend URL |
 | `MCP_SERVER_PORT` | No | `8001` | MCP server port |
 | `OPENAI_API_KEY` | For voice | — | Whisper STT + TTS |
