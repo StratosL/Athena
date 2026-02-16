@@ -22,9 +22,9 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 # Create FastMCP server
-mcp = FastMCP(  # noqa: S104
+mcp = FastMCP(
     "Athena",
-    host="0.0.0.0",
+    host="0.0.0.0",  # noqa: S104
     port=settings.mcp_server_port,
     streamable_http_path="/",
 )
