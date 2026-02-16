@@ -34,34 +34,8 @@ Athena/
 ├── agent-config/          ← Agent Builder system prompt + ES|QL tool definitions
 ├── sample-vault/          ← Demo Obsidian vault (15-20 notes)
 ├── docs/                  ← Architecture diagrams
-├── devpost/               ← Hackathon submission materials
-│
-└── reference/             ← Inspiration codebases (READ-ONLY, never modify)
+└── devpost/               ← Hackathon submission materials
 ```
-
-## Reference Projects — When to Read What
-
-The `reference/` folder contains codebases we studied for best practices. **Do not modify these files.** Read them for patterns when building specific components:
-
-### For building `mcp-server/src/vault_manager.py` and `mcp-server/src/tools/vault.py`:
-- **`reference/obsidian-ai-agent/app/shared/vault/vault_manager.py`** — Complete VaultManager class with path validation, directory traversal prevention, frontmatter parsing, CRUD operations. This is our primary blueprint.
-- **`reference/obsidian-ai-agent/app/shared/vault/vault_models.py`** — Pydantic models for Note, Frontmatter, VaultPath.
-- **`reference/obsidian-ai-agent/app/features/obsidian_note_manager_tool/obsidian_note_manager_tool.py`** — 12 vault modification operations with `confirm_destructive` pattern.
-- **`reference/obsidian-ai-agent/app/features/obsidian_query_vault_tool/obsidian_query_vault_tool.py`** — 5 query types, `response_format` parameter (concise vs detailed).
-- **`reference/obsidian-ai-agent/app/features/obsidian_get_context_tool/obsidian_get_context_tool.py`** — 5 context reading types, token-aware design.
-
-### For building `indexer/`:
-- **`reference/hierarchical-rag/`** — Dual hierarchy (categorical + structural), 3-level chunks, agent tools (list_categories, search_knowledge_base, get_chunk_context, get_document_overview). Study for chunking and indexing strategy.
-
-### For building `mcp-server/src/tools/research.py` and general tool patterns:
-- **`reference/obsidian-productivity-agent/backend_agent_api/agent.py`** — PydanticAI agent with 9 tools, AgentDeps pattern. Study for tool registration.
-- **`reference/obsidian-productivity-agent/backend_agent_api/tools.py`** — Web search (Brave/SearXNG), RAG retrieval, SQL execution, safe code execution patterns.
-
-### Lower priority (kept for context):
-- **`reference/claude-agent-sdk-proactive-agent/`** — Claude Agent SDK patterns. Not directly used (we use Elastic Agent Builder).
-- **`reference/claude-code-second-brain-skills/`** — Skill creation patterns for Claude Code.
-- **`reference/full-stack-fastapi-nextjs-llm-template/`** — Cookiecutter template. Useful if we add a web UI later.
-- **`reference/HACKATHON_PROJECT_PLAN.md`** — Original hackathon plan, superseded by PRD.md.
 
 ## Key Architectural Decisions
 

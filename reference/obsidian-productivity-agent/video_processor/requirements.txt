@@ -1,2 +1,0 @@
-watchdog==4.0.0
-faster-whisper==1.0.1
