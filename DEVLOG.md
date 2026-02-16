@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~24 hours (Days 1–20) |
+| Total time | ~24.5 hours (Days 1–21) |
 | Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 14 (3 vault + 7 Artemis + 1 knowledge + 2 research + 1 skills) |
@@ -21,11 +21,29 @@
 | Type checking | pyright in both sub-projects — 0 errors |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 16.3k char system prompt (synced) |
-| Current state | Skills system — vault runtime skills + Claude Code developer skills |
+| Current state | Ship workflow — devlog + commit + push chained command |
 
 ---
 
 ## The Journey
+
+### Day 21: Ship Command (Feb 16) — ~30 min
+
+Created a `/ship` slash command that chains three workflow steps: update devlog, commit, and push. Eliminates the manual three-step end-of-session ritual by wrapping `/update-devlog` and `/commit` skills with a final `git push` into a single invocation.
+
+**New Command**
+
+- [x] `.claude/commands/ship.md` — Wrapper command that sequentially invokes `/update-devlog`, then `/commit` (including the updated DEVLOG.md), then pushes to remote. Each step waits for the previous to succeed.
+
+**Key Additions**
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `.claude/commands/ship.md` | 40 | Chained workflow: devlog + commit + push |
+
+**Design Decision:** Chose a wrapper command over modifying the existing `/commit` skill to preserve the ability to commit without devlog updates when needed.
+
+---
 
 ### Day 20: Skills System (Feb 16) — ~1 hour
 
@@ -824,4 +842,4 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 
 ---
 
-*Last updated: February 16, 2026 (Day 20)*
+*Last updated: February 16, 2026 (Day 21)*
