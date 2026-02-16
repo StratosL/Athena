@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~19 hours (Days 1–16) |
+| Total time | ~19.5 hours (Days 1–17) |
 | Sub-projects | 6 (indexer, mcp-server, voice-client, agent-config, artemis-backend, frontend) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 13 (3 vault + 7 Artemis + 1 knowledge + 2 research) |
@@ -19,13 +19,31 @@
 | Sample vault | 19 notes across 6 folders, 135 wikilinks |
 | Indexer status | Validated end-to-end — 17/17 indexed, dedup confirmed, semantic search working |
 | Type checking | pyright in both sub-projects — 0 errors |
-| System prompt | 256 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
-| Agent Builder | Athena agent live — 19 tools (6 ES|QL + 13 MCP), 13k char system prompt |
-| Current state | Memory system implemented — profile + memory injection via voice proxy, daily note write-back, agent memory guidance in system prompt |
+| System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
+| Agent Builder | Athena agent live — 19 tools (6 ES|QL + 13 MCP), 14.5k char system prompt (synced) |
+| Current state | System prompt synced to Agent Builder — all memory guidance live in production |
 
 ---
 
 ## The Journey
+
+### Day 17: System Prompt Sync to Agent Builder (Feb 16) — ~30 min
+
+Re-synced the updated system prompt (with comprehensive memory guidance) to the live Athena agent in Elastic Agent Builder via Kibana REST API.
+
+**System Prompt Sync**
+
+- [x] Fetched current agent config via `GET /api/agent_builder/agents/athena` — confirmed old 4-line Memory & Context section was still deployed
+- [x] Updated agent via `PUT /api/agent_builder/agents/athena` with full `agent-config/system-prompt.md` content
+- [x] System prompt grew from 13,351 to 14,508 chars — new Memory & Context section adds Injected Memory, Updating Memory, and Conversation Summaries guidance
+- [x] Verified 19/19 tools preserved in response (6 ES|QL + 13 MCP)
+- [x] Confirmed memory keywords (`Injected Memory`, `Updating Memory`, `Conversation Summaries`) present in deployed instructions
+
+**API Note:** Agent PUT endpoint rejects `id` in the request body (it's in the URL path) — different from the POST creation endpoint which required it.
+
+**Result:** Agent Builder now running the latest system prompt. Memory injection (via voice proxy) and memory guidance (in system prompt) are both live. Ready for demo.
+
+---
 
 ### Day 16: Memory System (Feb 16) — ~2 hours
 
@@ -633,11 +651,11 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 - ~~Monorepo strategy research~~ done (ADR-004, Day 13)
 - ~~Monorepo merge: Phase A~~ done (Day 14) — Artemis copied into `services/artemis-backend/` + `frontend/`
 - ~~Memory system~~ done (Day 16) — profile + memory files, voice proxy injection, daily note write-back
-- Re-sync system prompt in Agent Builder (paste updated `system-prompt.md` into Kibana)
+- ~~Re-sync system prompt in Agent Builder~~ done (Day 17) — 14.5k chars, memory guidance live
 - Demo video recording (while Elastic Cloud trial is active)
 - Heartbeat service (if time allows)
 - Optional: streaming support (SSE token-by-token responses)
 
 ---
 
-*Last updated: February 16, 2026 (Day 16)*
+*Last updated: February 16, 2026 (Day 17)*
