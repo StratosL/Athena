@@ -11,21 +11,68 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~23 hours (Days 1–19) |
+| Total time | ~24 hours (Days 1–20) |
 | Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
-| MCP tools implemented | 13 (3 vault + 7 Artemis + 1 knowledge + 2 research) |
+| MCP tools implemented | 14 (3 vault + 7 Artemis + 1 knowledge + 2 research + 1 skills) |
 | ES|QL tools defined | 5 + 1 index search |
 | Sample vault | 20 notes across 6 folders, 135 wikilinks |
 | Indexer status | Validated end-to-end — 17/17 indexed, dedup confirmed, semantic search working |
 | Type checking | pyright in both sub-projects — 0 errors |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
-| Agent Builder | Athena agent live — 19 tools (6 ES|QL + 13 MCP), 14.5k char system prompt (synced) |
-| Current state | Setup automation — one-command bootstrap via `./setup.sh` |
+| Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 14.5k char system prompt |
+| Current state | Skills system — vault runtime skills + Claude Code developer skills |
 
 ---
 
 ## The Journey
+
+### Day 20: Skills System (Feb 16) — ~1 hour
+
+Added a two-layer skills system: vault runtime skills (agent-native, stored in Obsidian) and Claude Code developer skills (for extending the codebase). Users can now say "run my morning routine" and the agent loads and executes a multi-step workflow from the vault. The agent can also create new skills from conversation.
+
+**New MCP Tool: `skill_manager`**
+
+- [x] `mcp-server/src/tools/skills.py` — 5 operations following the vault tool pattern: `list_skills` (scans `Meta/Skills/*.md`, extracts frontmatter), `load_skill` (reads full content), `create_skill` (writes with frontmatter + tags), `edit_skill` (preserves metadata, replaces content), `delete_skill` (requires `confirm_destructive=true`)
+- [x] Registered in `server.py` — tool count 13 → 14
+
+**Sample Vault Skills (3)**
+
+- [x] `sample-vault/Meta/Skills/morning-routine.md` — Morning briefing: daily plan → pending tasks → recent changes → daily note → summary
+- [x] `sample-vault/Meta/Skills/meeting-debrief.md` — Extract action items from meeting notes, classify by quadrant, create tasks, append debrief section
+- [x] `sample-vault/Meta/Skills/weekly-review.md` — Weekly analytics → completed tasks → pending/overdue → vault activity → narrative review
+
+**System Prompt Updates**
+
+- [x] Added Skills tool documentation section (after Research tools)
+- [x] Added tool selection row for multi-step workflows
+- [x] Added Pattern 8 (Skill Execution) and Pattern 9 (Skill Creation)
+- [x] Added Skills Awareness note to Memory & Context section
+
+**Voice Proxy Skill Injection**
+
+- [x] Extended `_read_memory_context()` in `serve.py` — scans `Meta/Skills/*.md`, parses frontmatter, injects "Available Skills" section with names and trigger phrases into `systemPromptAddition`
+- [x] Added `python-frontmatter>=1.1.0` to voice-client dependencies
+
+**Claude Code Developer Skills (2)**
+
+- [x] `.claude/skills/customize/SKILL.md` — Documents both skill layers, how to add MCP tools, key files table, coding standards
+- [x] `.claude/skills/add-integration/SKILL.md` — Step-by-step template for adding new service integrations (client adapter → tool module → config → server registration → system prompt → Agent Builder sync)
+
+**Key Additions**
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `mcp-server/src/tools/skills.py` | 130 | `skill_manager` MCP tool (5 operations) |
+| `sample-vault/Meta/Skills/morning-routine.md` | 45 | Sample skill: morning briefing |
+| `sample-vault/Meta/Skills/meeting-debrief.md` | 42 | Sample skill: meeting task extraction |
+| `sample-vault/Meta/Skills/weekly-review.md` | 50 | Sample skill: weekly productivity review |
+| `.claude/skills/customize/SKILL.md` | 75 | Developer skill: extending Athena |
+| `.claude/skills/add-integration/SKILL.md` | 85 | Developer skill: adding integrations |
+
+**Validation:** ruff check passes on all new/modified files, syntax verified, tool count confirmed at 14 MCP tools.
+
+---
 
 ### Day 19: Setup Automation (Feb 16) — ~1.5 hours
 
@@ -527,6 +574,8 @@ Started from the PRD. Built the full project skeleton and connected to Elastic C
 
 **MCP — Research:** `web_search`, `fetch_url`
 
+**MCP — Skills:** `skill_manager` (5 operations: list_skills, load_skill, create_skill, edit_skill, delete_skill)
+
 ### Day 2: Indexer Core Implementation (Feb 12) — ~1 hour
 
 Built the full indexer pipeline: vault parsing → checksum dedup → bulk ES indexing → live filesystem watch.
@@ -760,9 +809,10 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 - ~~Re-sync system prompt in Agent Builder~~ done (Day 17) — 14.5k chars, memory guidance live
 - ~~Heartbeat service~~ done (Day 18) — APScheduler + converse API, HEARTBEAT_OK suppression, daily note alerts
 - ~~Setup automation~~ done (Day 19) — `./setup.sh` one-command bootstrap, SQL migration, Kibana API automation
+- ~~Skills system~~ done (Day 20) — vault runtime skills + Claude Code developer skills, 3 sample skills
 - Demo video recording (while Elastic Cloud trial is active)
 - Optional: streaming support (SSE token-by-token responses)
 
 ---
 
-*Last updated: February 16, 2026 (Day 19)*
+*Last updated: February 16, 2026 (Day 20)*

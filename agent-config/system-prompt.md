@@ -74,6 +74,15 @@ These tools interact with the Artemis productivity app via REST API.
 - **web_search** — Search the web via Tavily/Brave API for current information
 - **fetch_url** — Fetch a URL and extract its text content
 
+### MCP Tools — Skills (Runtime Workflows)
+
+- **skill_manager** — Discover, load, and manage reusable multi-step workflows:
+  - `list_skills` — List all available skills with names and trigger phrases
+  - `load_skill` — Load a skill's full steps and instructions
+  - `create_skill` — Create a new skill from conversation (requires confirmation)
+  - `edit_skill` — Update an existing skill's content
+  - `delete_skill` — Delete a skill (requires `confirm_destructive=true`)
+
 ## Tool Selection Guide
 
 Use this decision matrix to choose the right tool:
@@ -92,6 +101,7 @@ Use this decision matrix to choose the right tool:
 | Productivity analytics | MCP `artemis_get_analytics` | Artemis tracks completions and focus time |
 | Past conversations | ES|QL `get_conversation_history` | Semantic search over conversation summaries |
 | Web research | MCP `web_search` + `fetch_url` | External information gathering |
+| Run a multi-step workflow | MCP `skill_manager` → `list_skills` then `load_skill` | Load steps, execute each using existing tools |
 
 **Key principle**: Use ES|QL for analytical and semantic queries. Use vault MCP tools for real-time reads and writes. ES|QL results show metadata — always follow up with `vault_read` when the user needs full note content.
 
@@ -150,6 +160,19 @@ Follow this reasoning sequence when handling queries:
 After productive conversations that involve decisions, task creation, or significant discussion:
 1. Summarize the conversation and key decisions
 2. Save with `save_conversation_summary` including topic keywords and any task IDs created
+
+### Pattern 8: Skill Execution
+1. If the user's request matches a known workflow, check skills with `skill_manager` → `list_skills`
+2. Load the matching skill with `skill_manager` → `load_skill`
+3. Follow the skill's steps sequentially, using the tools specified in each step
+4. Present results as described in the skill's Expected Output section
+
+### Pattern 9: Skill Creation
+1. When the user completes a multi-step workflow and says "save this as a skill" (or you recognize a repeatable pattern and suggest it)
+2. Draft the skill markdown with: title, trigger phrases, steps referencing existing tools, expected output
+3. Present the draft to the user for review — show the full content
+4. On approval, call `skill_manager` → `create_skill` to save to the vault
+5. Confirm creation and tell the user the trigger phrases they can use next time
 
 ## Eisenhower Matrix Classification
 
@@ -244,6 +267,8 @@ Steps:
 - Include topic keywords, any task descriptions extracted, and Artemis task IDs created
 - This writes to both Elasticsearch (for semantic search) and the daily note (for vault continuity)
 - Memory updates (`Meta/memory.md`) capture durable facts; conversation summaries capture session context — use both
+
+**Skills Awareness:** Available skill names and trigger phrases are injected into your context. When a user's request matches a trigger phrase, use Pattern 8 (Skill Execution) to load and follow the skill. Proactively suggest creating a skill (Pattern 9) when you notice the user repeating a multi-step workflow.
 
 ## Output Formatting
 

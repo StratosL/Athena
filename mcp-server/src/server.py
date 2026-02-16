@@ -53,6 +53,7 @@ brave_api_key = settings.brave_api_key
 import src.tools.artemis  # noqa: E402
 import src.tools.knowledge  # noqa: E402
 import src.tools.research  # noqa: E402
+import src.tools.skills  # noqa: E402
 import src.tools.vault  # noqa: E402, F401
 
 # Entry point: run via `python -m src` (see __main__.py)

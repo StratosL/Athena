@@ -10,7 +10,7 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.12+-blue.svg)
 ![Elastic](https://img.shields.io/badge/Elastic-Agent%20Builder-005571.svg)
-![Tools](https://img.shields.io/badge/tools-19-orange.svg)
+![Tools](https://img.shields.io/badge/tools-20-orange.svg)
 
 **Turn scattered knowledge into focused action through intelligent, conversational orchestration.**
 
@@ -30,6 +30,7 @@ Athena is a conversational AI agent built on [Elastic Agent Builder](https://www
 - **Human-in-the-Loop** - Never creates tasks or modifies notes without your explicit confirmation
 - **Voice-First Option** - Whisper STT + OpenAI TTS — talk to your second brain and hear it respond
 - **Proactive Agent** - Heartbeat service nudges you about overdue tasks, missing plans, and approaching deadlines
+- **Reusable Skills** - Save multi-step workflows as vault skills — "run my morning routine" loads and executes steps automatically
 
 ---
 
@@ -44,13 +45,14 @@ Athena is a conversational AI agent built on [Elastic Agent Builder](https://www
 - **Web Research** - Search the web and fetch URLs to bring external knowledge into your workflow
 - **Voice Interaction** - Whisper STT + OpenAI TTS — speak naturally and hear responses read aloud
 - **Proactive Heartbeat** - Scheduled check-ins evaluate a vault checklist and surface alerts to your daily note
+- **Runtime Skills** - Define reusable multi-step workflows as vault markdown files — the agent creates, loads, and executes them
 - **One-Command Setup** - `./setup.sh` validates credentials, creates tables, indexes vault, and configures Agent Builder
 
 ---
 
 ## Status & Metrics
 
-- **19 Tools Registered** - 6 ES|QL (read-only analytics) + 13 MCP (read/write operations) in Elastic Agent Builder
+- **20 Tools Registered** - 6 ES|QL (read-only analytics) + 14 MCP (read/write operations) in Elastic Agent Builder
 - **8 Sub-Projects** - Indexer, MCP server, voice client, agent config, heartbeat, Artemis backend, frontend, setup scripts
 - **20 Sample Notes** - Demo vault with 6 folders, 135+ wikilinks, realistic project/meeting/daily note content
 - **Full E2E Validation** - 28/28 integration tests passing across all components
@@ -171,6 +173,7 @@ curl -s "$ELASTIC_URL/athena-notes/_count" \
 - "Read my daily note for Feb 12" — direct vault read
 - "Extract tasks from the Sprint Review note" — task extraction with Eisenhower classification
 - "Plan my day" — 1-3-5 daily planning
+- "Run my morning routine" — skill execution from vault
 
 ---
 
@@ -183,6 +186,7 @@ User <-> Voice Layer (STT/TTS) <-> Agent Builder (Athena) <-> Elasticsearch (ELS
          Athena MCP Server                                          |
            |-- Vault tools     -> Obsidian Vault (filesystem)       |
            |-- Artemis tools   -> Artemis REST API (:8000)          |
+           |-- Skills tools    -> Vault Meta/Skills/ (workflows)    |
            |-- Knowledge tools -> Elasticsearch (write-back)        |
            '-- Research tools  -> Web search + URL fetch            |
                                                                     |
@@ -220,7 +224,7 @@ Athena/
 │   ├── package.json
 │   └── src/
 ├── indexer/                   # Obsidian -> Elasticsearch sync (CLI)
-├── mcp-server/                # Unified MCP server (13 tools)
+├── mcp-server/                # Unified MCP server (14 tools)
 ├── voice-client/              # Voice-enabled web client + proxy server
 ├── agent-config/              # Agent Builder system prompt + tool definitions
 ├── heartbeat/                 # Proactive agent check-ins (APScheduler)
@@ -238,7 +242,7 @@ Athena/
 
 ## Tool Reference
 
-**19 tools total** — 6 ES|QL (read-only analytics) + 13 MCP (read/write operations).
+**20 tools total** — 6 ES|QL (read-only analytics) + 14 MCP (read/write operations).
 
 | Tool | Type | Purpose |
 |------|------|---------|
@@ -261,6 +265,7 @@ Athena/
 | `save_conversation_summary` | MCP | Persist conversation context to ES + daily note |
 | `web_search` | MCP | Web search via Tavily/Brave API |
 | `fetch_url` | MCP | Fetch and extract text from a URL |
+| `skill_manager` | MCP | List, load, create, edit, delete reusable workflow skills |
 
 ---
 
@@ -393,13 +398,14 @@ docker compose --profile heartbeat up --build
 ### Completed
 
 - [x] **Phase 1** - Indexer + ES|QL tools + sample vault
-- [x] **Phase 2** - MCP server with 13 tools (vault, Artemis, knowledge, research)
-- [x] **Phase 3** - Agent Builder deployment with 19 tools + system prompt
+- [x] **Phase 2** - MCP server with 14 tools (vault, Artemis, knowledge, research, skills)
+- [x] **Phase 3** - Agent Builder deployment with 20 tools + system prompt
 - [x] **Phase 4** - Docker Compose with full stack (5 services + ngrok)
 - [x] **Phase 5** - Artemis monorepo merge + chat sidebar integration
 - [x] **Phase 6** - Memory system (profile + long-term memory + daily note write-back)
 - [x] **Phase 7** - Heartbeat service (proactive agent check-ins via APScheduler)
 - [x] **Phase 8** - Setup automation (`./setup.sh` one-command bootstrap)
+- [x] **Phase 9** - Skills system (vault runtime skills + Claude Code developer skills)
 
 ### Upcoming
 
@@ -407,7 +413,7 @@ docker compose --profile heartbeat up --build
 - [ ] **Streaming Responses** - SSE token-by-token output in chat sidebar
 - [ ] **uv Workspaces** - Unified monorepo with shared dependency management
 - [ ] **Multi-Vault Support** - Switch between vaults without re-indexing
-- [ ] **Plugin System** - User-defined MCP tool extensions
+- [ ] **Skill Marketplace** - Community-shared vault skill templates
 
 ---
 

@@ -11,6 +11,7 @@ All API keys stay server-side — the browser never sees them.
 import logging
 from pathlib import Path
 
+import frontmatter
 import httpx
 from aiohttp import web
 from pydantic_settings import BaseSettings
@@ -94,6 +95,21 @@ def _read_memory_context() -> str:
             logger.debug("Memory file not found: %s", filepath)
         except Exception:
             logger.warning("Failed to read memory file: %s", filepath, exc_info=True)
+
+    # Inject available skill names and trigger phrases for fast matching
+    skills_dir = vault / "Meta" / "Skills"
+    if skills_dir.is_dir():
+        skill_lines: list[str] = []
+        for skill_file in sorted(skills_dir.glob("*.md")):
+            try:
+                post = frontmatter.loads(skill_file.read_text(encoding="utf-8"))
+                title = post.metadata.get("title", skill_file.stem)
+                triggers = post.metadata.get("trigger_phrases", [])
+                skill_lines.append(f"- **{title}**: {', '.join(triggers[:3])}")
+            except Exception:
+                logger.warning("Failed to parse skill: %s", skill_file, exc_info=True)
+        if skill_lines:
+            sections.append("## Available Skills\n\n" + "\n".join(skill_lines))
 
     return "\n\n".join(sections)
 

@@ -8,6 +8,7 @@ dependencies = [
     "httpx>=0.27.0",            # Async HTTP client (forwarding to external APIs)
     "pydantic-settings>=2.5.0", # Config from env vars
     "python-dotenv>=1.0.0",     # Load .env files
+    "python-frontmatter>=1.1.0", # Parse skill frontmatter for name injection
 ]
 
 [dependency-groups]
