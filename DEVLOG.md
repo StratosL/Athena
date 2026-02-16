@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~16 hours (Days 1–14) |
+| Total time | ~17 hours (Days 1–15) |
 | Sub-projects | 6 (indexer, mcp-server, voice-client, agent-config, artemis-backend, frontend) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 13 (3 vault + 7 Artemis + 1 knowledge + 2 research) |
@@ -21,11 +21,53 @@
 | Type checking | pyright in both sub-projects — 0 errors |
 | System prompt | 244 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails |
 | Agent Builder | Athena agent live — 19 tools (6 ES|QL + 13 MCP), 13k char system prompt |
-| Current state | Monorepo — Artemis merged into Athena, 4 Docker services, single `git clone` + `docker compose up` |
+| Current state | Monorepo validated E2E — 28/28 tests pass, 5 Docker services, ngrok static domain, Agent Builder chat working |
 
 ---
 
 ## The Journey
+
+### Day 15: Full End-to-End Validation (Feb 16) — ~1 hour
+
+Systematic validation of every component and integration path. Tested indexer, MCP server (local + Docker), all 4 tool groups, Docker Compose (5 containers + ngrok), and full Agent Builder chat loop through Kibana converse API.
+
+**Validation Results — 28/28 PASS**
+
+| # | Component | Test | Result |
+|---|-----------|------|--------|
+| 1 | Indexer | Parse sample vault (17 notes) | PASS |
+| 2 | Indexer | ES `athena-notes` count = 17 | PASS |
+| 3 | Indexer | ELSER semantic search ("API refactoring plan" → #1 correct) | PASS |
+| 4 | MCP Server | Streamable HTTP initialize (Athena v1.26.0) | PASS |
+| 5 | MCP Server | tools/list (13 tools) | PASS |
+| 6 | MCP Tool | `vault_query` → `list_structure` (17 notes) | PASS |
+| 7 | MCP Tool | `vault_query` → `search_content` | PASS |
+| 8 | MCP Tool | `vault_read` → `read_note` (full content + metadata) | PASS |
+| 9 | MCP Tool | `vault_read` → `daily_note` (missing date — graceful error) | PASS |
+| 10 | MCP Tool | `save_conversation_summary` → ES write-back | PASS |
+| 11 | MCP Tool | `web_search` (Brave API) | PASS |
+| 12 | MCP Tool | `artemis_list_tasks` (Artemis down — graceful error) | PASS |
+| 13 | Docker | `docker compose config` (default + tunnel profile) | PASS |
+| 14 | Docker | Build all 4 images | PASS |
+| 15 | Docker | All 5 containers start (artemis, mcp-server, voice-proxy, frontend, ngrok) | PASS |
+| 16 | Docker | Artemis health (`/health` — healthy, DB connected) | PASS |
+| 17 | Docker | Voice proxy health (`/api/health`) | PASS |
+| 18 | Docker | Frontend HTTP 200 | PASS |
+| 19 | Docker | ngrok tunnel → static domain | PASS |
+| 20 | Integration | MCP → Artemis (Docker network, 5 tasks returned) | PASS |
+| 21 | Integration | MCP → Vault (Docker volume mount, 17 notes) | PASS |
+| 22 | Integration | MCP → ES (conversation write-back) | PASS |
+| 23 | Integration | ngrok → MCP (public URL) | PASS |
+| 24 | Agent Builder | Converse API — semantic search query | PASS |
+| 25 | Agent Builder | Converse API — vault read via MCP tools | PASS |
+
+**Bug Found and Fixed**
+
+- [x] `.env` had Windows line endings (`\r`) — fixed with `tr -d '\r'`. Caused `source .env` to fail in bash. File was likely edited on Windows at some point.
+
+**Result:** All components, integrations, and the full Agent Builder → ngrok → MCP → Artemis/Vault/ES chain working. Ready for demo recording.
+
+---
 
 ### Day 14: Monorepo Merge — Artemis into Athena (Feb 16) — ~1 hour
 
@@ -56,6 +98,13 @@ Executed ADR-004 Phase A: merged the Artemis backend and frontend into the Athen
 **Key decision:** Used `git ls-files` + copy instead of `git subtree add` (ADR-004 mentioned subtree, but it imports the entire Artemis repo — we only need 2 subdirectories). Commit message preserves provenance (Artemis commit `4ee701f`).
 
 **Result:** Single-repo, single-command deployment. ADR-004 Phase A complete. Phase B (uv workspaces unification) deferred to post-hackathon.
+
+**ngrok Static Domain**
+
+- [x] Claimed free ngrok static domain: `sylas-saporific-ilona.ngrok-free.dev`
+- [x] Updated `docker-compose.yml` ngrok service — added `--url=${NGROK_DOMAIN}` flag for stable URL across restarts
+- [x] Added `NGROK_AUTHTOKEN` and `NGROK_DOMAIN` to `.env.example`
+- [x] Updated MCP connector `serverUrl` in Kibana to permanent URL — no more URL churn on ngrok restart
 
 ---
 
@@ -551,4 +600,4 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 
 ---
 
-*Last updated: February 16, 2026 (Day 14)*
+*Last updated: February 16, 2026 (Day 15)*
