@@ -20,7 +20,7 @@
 | Indexer status | Validated end-to-end — 17/17 indexed, dedup confirmed, semantic search working |
 | Type checking | pyright in both sub-projects — 0 errors |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
-| Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 14.5k char system prompt |
+| Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 16.3k char system prompt (synced) |
 | Current state | Skills system — vault runtime skills + Claude Code developer skills |
 
 ---
@@ -70,7 +70,16 @@ Added a two-layer skills system: vault runtime skills (agent-native, stored in O
 | `.claude/skills/customize/SKILL.md` | 75 | Developer skill: extending Athena |
 | `.claude/skills/add-integration/SKILL.md` | 85 | Developer skill: adding integrations |
 
-**Validation:** ruff check passes on all new/modified files, syntax verified, tool count confirmed at 14 MCP tools.
+**Agent Builder Sync**
+
+- [x] Synced updated system prompt to Agent Builder (14,508 → 16,277 chars)
+- [x] Registered `athena.skill_manager` as MCP tool via Kibana API (`POST /api/agent_builder/tools`)
+- [x] Added `athena.skill_manager` to agent's tool_ids (6 → 7 explicit IDs, 20 total tools)
+- [x] Verified via converse API — "What skills do I have?" returns all 3 skills with trigger phrases
+
+**Gotcha:** MCP tools require explicit registration in Agent Builder even though the connector auto-discovers the schema. The tool must also be added to the agent's `configuration.tools[0].tool_ids` list.
+
+**Validation:** ruff check passes on all new/modified files, syntax verified, tool count confirmed at 14 MCP tools (20 total in Agent Builder). Converse API end-to-end test passes.
 
 ---
 
