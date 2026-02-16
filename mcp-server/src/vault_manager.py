@@ -27,6 +27,7 @@ NOTE_TYPE_FOLDER_MAP: dict[str, str] = {
     "meeting notes": "meeting",
     "daily notes": "daily",
     "research": "research",
+    "meta": "meta",
 }
 
 

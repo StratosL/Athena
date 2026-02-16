@@ -11,21 +11,60 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~17 hours (Days 1–15) |
+| Total time | ~19 hours (Days 1–16) |
 | Sub-projects | 6 (indexer, mcp-server, voice-client, agent-config, artemis-backend, frontend) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 13 (3 vault + 7 Artemis + 1 knowledge + 2 research) |
 | ES|QL tools defined | 5 + 1 index search |
-| Sample vault | 17 notes across 5 folders, 135 wikilinks |
+| Sample vault | 19 notes across 6 folders, 135 wikilinks |
 | Indexer status | Validated end-to-end — 17/17 indexed, dedup confirmed, semantic search working |
 | Type checking | pyright in both sub-projects — 0 errors |
-| System prompt | 244 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails |
+| System prompt | 256 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 19 tools (6 ES|QL + 13 MCP), 13k char system prompt |
-| Current state | Monorepo validated E2E — 28/28 tests pass, 5 Docker services, ngrok static domain, Agent Builder chat working |
+| Current state | Memory system implemented — profile + memory injection via voice proxy, daily note write-back, agent memory guidance in system prompt |
 
 ---
 
 ## The Journey
+
+### Day 16: Memory System (Feb 16) — ~2 hours
+
+Implemented persistent memory across sessions. The agent now knows who the user is, remembers past decisions, and writes conversation summaries to daily notes. Based on patterns from ADR-003 (OpenClaw/NanoClaw research).
+
+**Memory Files**
+
+- [x] Created `sample-vault/Meta/user-profile.md` — demo profile for "Stratos" with identity, communication preferences, vault organization, current focus, team members, and work patterns
+- [x] Created `sample-vault/Meta/memory.md` — starter long-term memory with key decisions, project relationships, and discovered preferences
+- [x] Added `"meta": "meta"` to `NOTE_TYPE_FOLDER_MAP` in both `mcp-server/src/vault_manager.py` and `indexer/src/parser.py`
+
+**Memory Injection (Voice Proxy)**
+
+- [x] Added `vault_path` setting to `VoiceSettings` class
+- [x] Added `_read_memory_context()` helper — reads both Meta files, strips YAML frontmatter, truncates at 20K chars per file, graceful degradation on missing files
+- [x] Injected memory into every chat request via `configuration_overrides.systemPromptAddition` in the converse API payload
+- [x] Added vault volume mount (`/vault:ro`) and `VAULT_PATH` env var to `voice-proxy` service in `docker-compose.yml`
+
+**Daily Note Write-back**
+
+- [x] Enhanced `save_conversation_summary` to append `## Conversation Summary (HH:MM UTC)` blocks to daily notes via `vault_manager`
+- [x] Creates daily note with proper frontmatter if it doesn't exist, matching existing daily note format
+- [x] Non-fatal: vault write failures are logged but don't break the ES write-back
+- [x] Return value now includes both `es_document_id` and `daily_note` path
+
+**System Prompt Update**
+
+- [x] Replaced 4-line Memory & Context section with comprehensive guide: injected memory usage, how to update `Meta/memory.md` via existing `vault_manage` tool, never modify profile without permission, distinction between memory updates and conversation summaries
+
+**Key Additions**
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `sample-vault/Meta/user-profile.md` | 39 | Demo user profile for memory injection |
+| `sample-vault/Meta/memory.md` | 30 | Starter agent long-term memory |
+
+**Validation:** All ruff lint/format checks pass. `_read_memory_context()` verified to read and format both files (2,744 chars). Docker Compose config validates with new volume mount.
+
+---
 
 ### Day 15: Full End-to-End Validation (Feb 16) — ~1 hour
 
@@ -593,11 +632,12 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 - ~~Artemis frontend in Docker Compose~~ done (Day 12)
 - ~~Monorepo strategy research~~ done (ADR-004, Day 13)
 - ~~Monorepo merge: Phase A~~ done (Day 14) — Artemis copied into `services/artemis-backend/` + `frontend/`
-- Memory system: `Meta/user-profile.md` + `Meta/memory.md` + injection via `configuration_overrides`
+- ~~Memory system~~ done (Day 16) — profile + memory files, voice proxy injection, daily note write-back
+- Re-sync system prompt in Agent Builder (paste updated `system-prompt.md` into Kibana)
 - Demo video recording (while Elastic Cloud trial is active)
 - Heartbeat service (if time allows)
 - Optional: streaming support (SSE token-by-token responses)
 
 ---
 
-*Last updated: February 16, 2026 (Day 15)*
+*Last updated: February 16, 2026 (Day 16)*

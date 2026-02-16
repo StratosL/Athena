@@ -43,6 +43,7 @@ class VoiceSettings(BaseSettings):
     elastic_api_key: str = ""
     agent_id: str = "athena"
     openai_api_key: str = ""
+    vault_path: str = "/vault"
     voice_server_port: int = 3001
 
     model_config = {
@@ -58,6 +59,44 @@ class VoiceSettings(BaseSettings):
 
 
 settings = VoiceSettings()
+
+MAX_MEMORY_CHARS = 20_000
+
+
+def _strip_frontmatter(text: str) -> str:
+    """Remove YAML frontmatter (between --- delimiters) from markdown text."""
+    if text.startswith("---"):
+        end = text.find("---", 3)
+        if end != -1:
+            return text[end + 3 :].lstrip("\n")
+    return text
+
+
+def _read_memory_context() -> str:
+    """Read user profile and agent memory files from the vault.
+
+    Returns a formatted string for injection into systemPromptAddition,
+    or empty string if no memory files exist.
+    """
+    vault = Path(settings.vault_path)
+    sections: list[str] = []
+
+    for filename, header in [
+        ("Meta/user-profile.md", "## User Profile"),
+        ("Meta/memory.md", "## Agent Memory"),
+    ]:
+        filepath = vault / filename
+        try:
+            raw = filepath.read_text(encoding="utf-8")
+            content = _strip_frontmatter(raw)[:MAX_MEMORY_CHARS]
+            sections.append(f"{header}\n\n{content}")
+        except FileNotFoundError:
+            logger.debug("Memory file not found: %s", filepath)
+        except Exception:
+            logger.warning("Failed to read memory file: %s", filepath, exc_info=True)
+
+    return "\n\n".join(sections)
+
 
 # Persistent HTTP clients — reuse TCP connections + TLS sessions across requests.
 # Created at module level, closed via app cleanup signal.
@@ -101,6 +140,12 @@ async def chat(request: web.Request) -> web.Response:
     }
     if conversation_id:
         payload["conversation_id"] = conversation_id
+
+    memory_context = _read_memory_context()
+    if memory_context:
+        payload["configuration_overrides"] = {
+            "systemPromptAddition": memory_context,
+        }
 
     try:
         resp = await kibana_client.post(

@@ -51,8 +51,12 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3001:3001"
+    volumes:
+      - "${VAULT_PATH:-./sample-vault}:/vault:ro"
     env_file:
       - .env
+    environment:
+      - VAULT_PATH=/vault
     restart: unless-stopped
 
   # --- Artemis Frontend ---

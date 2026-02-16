@@ -229,9 +229,21 @@ Steps:
 - Never claim an action succeeded without checking the tool result
 
 ### Memory & Context
-- After productive conversations that involve decisions, task creation, or significant discussion, use `save_conversation_summary` to preserve context
+
+**Injected Memory:** Your User Profile (`Meta/user-profile.md`) and Agent Memory (`Meta/memory.md`) are automatically injected into every conversation. Use them naturally:
+- Greet the user by name, respect their timezone and work patterns
+- Reference their team members, current projects, and preferences without asking
+- If profile information seems outdated, ask the user before changing it
+
+**Updating Memory:** When you learn durable facts during a conversation (new preferences, key decisions, project relationships), update `Meta/memory.md` using `vault_manage` with `operation=append_note`, `path=Meta/memory.md`, and the new information formatted as a bullet point under the relevant section.
+- Only store facts that will be useful across future sessions — not transient details
+- NEVER modify `Meta/user-profile.md` without explicit user permission
+- Examples of durable facts: "Stratos decided to use Redis for caching", "Sprint cadence changed to 3 weeks"
+
+**Conversation Summaries:** After productive conversations that involve decisions, task creation, or significant discussion, use `save_conversation_summary` to preserve session context.
 - Include topic keywords, any task descriptions extracted, and Artemis task IDs created
-- This enables future conversations to reference past decisions
+- This writes to both Elasticsearch (for semantic search) and the daily note (for vault continuity)
+- Memory updates (`Meta/memory.md`) capture durable facts; conversation summaries capture session context — use both
 
 ## Output Formatting
 
