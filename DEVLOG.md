@@ -11,21 +11,68 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~19.5 hours (Days 1–17) |
-| Sub-projects | 6 (indexer, mcp-server, voice-client, agent-config, artemis-backend, frontend) |
+| Total time | ~21.5 hours (Days 1–18) |
+| Sub-projects | 7 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 13 (3 vault + 7 Artemis + 1 knowledge + 2 research) |
 | ES|QL tools defined | 5 + 1 index search |
-| Sample vault | 19 notes across 6 folders, 135 wikilinks |
+| Sample vault | 20 notes across 6 folders, 135 wikilinks |
 | Indexer status | Validated end-to-end — 17/17 indexed, dedup confirmed, semantic search working |
 | Type checking | pyright in both sub-projects — 0 errors |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 19 tools (6 ES|QL + 13 MCP), 14.5k char system prompt (synced) |
-| Current state | System prompt synced to Agent Builder — all memory guidance live in production |
+| Current state | Heartbeat service built — proactive agent check-ins via APScheduler |
 
 ---
 
 ## The Journey
+
+### Day 18: Heartbeat Service (Feb 16) — ~2 hours
+
+Built a proactive heartbeat service that periodically wakes Athena to evaluate a user-defined checklist. Transforms the agent from purely reactive to proactive — nudges about overdue tasks, missing daily plans, and approaching deadlines.
+
+**New Sub-project: `heartbeat/`**
+
+- [x] Scaffolded `heartbeat/` sub-project with `uv` — APScheduler 3.11, httpx, pydantic-settings, python-frontmatter
+- [x] `HeartbeatSettings` config class — interval, active hours, vault path, ES credentials, conversation ID persistence path
+- [x] Core `heartbeat_tick()` function — reads checklist from vault, injects user profile + agent memory, calls Kibana converse API, parses response
+- [x] `HEARTBEAT_OK` suppression — if agent finds nothing to report, response is silently discarded (debug log only)
+- [x] Alert delivery to daily note — real alerts appended as `## Heartbeat Alert (HH:MM UTC)` blocks, creates daily note if missing
+- [x] `CronTrigger` scheduler — runs every N minutes during active hours only (default: every 30 min, 8 AM - 10 PM)
+- [x] Conversation ID persistence — file-based, maintains session continuity across ticks
+- [x] Graceful shutdown via SIGTERM/SIGINT signal handling
+- [x] Multi-stage Dockerfile matching mcp-server pattern
+
+**Vault Checklist**
+
+- [x] Created `sample-vault/Meta/heartbeat.md` — demo checklist with morning (plan check, deadline alerts), throughout-day (overdue Q1 tasks, late-day nudges), and evening (daily summary, carry-over suggestions) sections
+
+**Docker Integration**
+
+- [x] Added `heartbeat` service to `docker-compose.yml` under `heartbeat` profile (opt-in — costs LLM tokens per tick)
+- [x] Added `HEARTBEAT_INTERVAL_MINUTES`, `HEARTBEAT_ACTIVE_HOUR_START`, `HEARTBEAT_ACTIVE_HOUR_END` to `.env.example`
+
+**Key Additions**
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `heartbeat/pyproject.toml` | 50 | Sub-project definition with APScheduler, httpx, pydantic-settings |
+| `heartbeat/src/config.py` | 43 | HeartbeatSettings (pydantic-settings) |
+| `heartbeat/src/heartbeat.py` | 245 | Core logic: scheduler, tick, memory injection, alert delivery |
+| `heartbeat/src/__main__.py` | 15 | Entry point (`python -m src`) |
+| `heartbeat/Dockerfile` | 30 | Multi-stage uv build |
+| `sample-vault/Meta/heartbeat.md` | 30 | User-editable heartbeat checklist |
+
+**Design Decisions**
+
+- APScheduler v3 (stable) over v4 (alpha) — reliability for hackathon deadline
+- `CronTrigger(minute="*/30", hour="8-21")` — native active-hours scheduling, no runtime guard
+- Profile-gated Docker service — opt-in to avoid unintended LLM costs (~$0.50-2/day at 30-min intervals)
+- Direct daily note writing for alerts — avoids circular dependency through converse API
+
+**Validation:** ruff check (0 errors), ruff format (4 files clean), pyright (0 errors), Docker build succeeds, docker compose config validates.
+
+---
 
 ### Day 17: System Prompt Sync to Agent Builder (Feb 16) — ~30 min
 
@@ -652,10 +699,10 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 - ~~Monorepo merge: Phase A~~ done (Day 14) — Artemis copied into `services/artemis-backend/` + `frontend/`
 - ~~Memory system~~ done (Day 16) — profile + memory files, voice proxy injection, daily note write-back
 - ~~Re-sync system prompt in Agent Builder~~ done (Day 17) — 14.5k chars, memory guidance live
+- ~~Heartbeat service~~ done (Day 18) — APScheduler + converse API, HEARTBEAT_OK suppression, daily note alerts
 - Demo video recording (while Elastic Cloud trial is active)
-- Heartbeat service (if time allows)
 - Optional: streaming support (SSE token-by-token responses)
 
 ---
 
-*Last updated: February 16, 2026 (Day 17)*
+*Last updated: February 16, 2026 (Day 18)*
