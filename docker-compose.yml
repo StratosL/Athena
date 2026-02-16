@@ -76,7 +76,7 @@ services:
     profiles:
       - tunnel
     image: ngrok/ngrok:latest
-    command: http mcp-server:8001
+    command: http --url=${NGROK_DOMAIN:-sylas-saporific-ilona.ngrok-free.dev} mcp-server:8001
     ports:
       - "4040:4040"
     environment:
