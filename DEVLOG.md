@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~25 hours (Days 1–22) |
+| Total time | ~26 hours (Days 1–23) |
 | Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 14 (3 vault + 7 Artemis + 1 knowledge + 2 research + 1 skills) |
@@ -21,11 +21,24 @@
 | Type checking | pyright (3 sub-projects) + TypeScript (frontend) — 0 errors across all |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 16.3k char system prompt (synced) |
-| Current state | Full validation pass — all checks green, ready for demo |
+| Current state | Persistent chat conversations — localStorage + history panel |
 
 ---
 
 ## The Journey
+
+### Day 23: Persistent Chat Conversations (Feb 18) — ~1 hour
+
+Chat messages and conversation history now survive page refresh. Added Zustand `persist` middleware to localStorage and a conversation history panel in the ChatSidebar.
+
+**Changes (2 files, 0 new files, 0 new deps):**
+
+- **`chatStore.ts`** — Wrapped store with `persist` middleware (key: `athena-chat`). Added `Conversation` type and `conversations[]` state. New actions: `newConversation()`, `switchConversation(id)`, `deleteConversation(id)`. `addMessage` auto-upserts active conversation in history. `setConversationId` creates history entry on first server ID. `onRehydrateStorage` reinitializes `messageCounter` from persisted IDs. Transient UI state (`isOpen`, `voiceMode`, `status`) excluded via `partialize`.
+- **`ChatSidebar/index.tsx`** — Added `ConversationList` internal component (sorted history, active highlight, hover-reveal delete, "New conversation" button). Two new header buttons: Clock (history toggle) and Plus (new chat). Messages area conditionally renders history panel vs chat.
+
+**Verification:** TypeScript `tsc --noEmit` — 0 errors. Vite build — success (961KB JS, 55KB CSS).
+
+---
 
 ### Day 22: Full Validation Pass (Feb 16) — ~30 min
 
