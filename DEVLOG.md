@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~26.5 hours (Days 1–24) |
+| Total time | ~27.5 hours (Days 1–24) |
 | Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 14 (3 vault + 7 Artemis + 1 knowledge + 2 research + 1 skills) |
@@ -21,13 +21,13 @@
 | Type checking | pyright (3 sub-projects) + TypeScript (frontend) — 0 errors across all |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 16.3k char system prompt (synced) |
-| Current state | Pomodoro polling fix — WebSocket-first, HTTP fallback only |
+| Current state | PRD fully updated to reflect actual architecture (971 lines, +289/-143) |
 
 ---
 
 ## The Journey
 
-### Day 24: Pomodoro Polling Fix (Feb 18) — ~30 min
+### Day 24: Pomodoro Polling Fix + PRD Overhaul (Feb 18) — ~1.5 hours
 
 Eliminated redundant HTTP polling during active Pomodoro sessions. Both `LuxuryPomodoroTimer` and `PomodoroWidget` were running two real-time channels simultaneously: a WebSocket (receiving `TICK` messages every second) and TanStack Query HTTP polling (`GET /pomodoro/active` every 1s). The HTTP poll was flooding the terminal with requests while the WebSocket was already doing the same job.
 
@@ -41,6 +41,20 @@ Eliminated redundant HTTP polling during active Pomodoro sessions. Both `LuxuryP
 **Also included:** `frontend/Dockerfile` — added `# check=skip=SecretsUsedInArgOrEnv` directive (pre-existing uncommitted change).
 
 **Verification:** TypeScript `tsc --noEmit` — 0 errors.
+
+**PRD Overhaul (1 file, +289/-143 lines)**
+
+Full audit and update of `PRD.md` to reflect 24 days of development beyond the original plan. The PRD was written on Day 1 and hadn't been updated since — now reflects the actual architecture.
+
+**Sections updated:**
+- **Section 1 (Executive Summary)** — Added embedded chat UI, memory system, heartbeat, skills
+- **Section 4 (MVP Scope)** — 3 new in-scope groups (Memory, Skills, DX). Moved chat UI + weekly reviews from "Out of Scope" to done. Updated note count (23)
+- **Section 6 (Architecture)** — Rewrote diagram (Streamable HTTP, skills, heartbeat). Replaced entire directory tree (added `services/`, `frontend/`, `heartbeat/`, `scripts/`, `supabase/`, `decisions/`, `Meta/`). Added 3 new design patterns (memory injection, heartbeat suppression, vault skills)
+- **Section 7 (Tools)** — Added Skills MCP tool group (5 ops). Fixed knowledge tool desc. Updated priorities
+- **Section 8 (Tech Stack)** — Fixed transport (SSE → Streamable HTTP), ES version. Rewrote voice client as Python proxy. Added Frontend, Heartbeat, Artemis Backend stacks. Replaced Railway/Render with ngrok static domain
+- **Section 9 (Config)** — Fixed `ELASTIC_CLOUD_ID` → `ELASTIC_URL`. Added 10+ missing env vars. Rewrote networking (10 connections)
+- **Sections 11-12 (Success + Phases)** — Fixed note count, added wow moments, rewrote all 4 phases to match actual timeline
+- **Sections 13-15 (Future + Risks + Appendix)** — Removed completed items, updated risks, fixed paths, updated checklist
 
 ---
 

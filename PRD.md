@@ -8,9 +8,11 @@ Athena is a conversational AI agent that serves as the intelligent bridge betwee
 
 What makes Athena different from a generic assistant is its **dual-path knowledge access**: Elasticsearch provides semantic search and analytics across your entire vault, while direct filesystem access gives real-time read/write capability to individual notes. The agent doesn't just search your notes — it lives in your vault, creating new notes, appending to your daily journal, and organizing your knowledge as you work.
 
-Athena also supports **voice interaction** as a first-class input/output mode. You can talk to your second brain and hear it respond, making it feel like a true intellectual companion rather than a chat window.
+Athena also supports **voice interaction** as a first-class input/output mode via an embedded chat sidebar in the Artemis React dashboard. You can talk to your second brain and hear it respond, making it feel like a true intellectual companion rather than a chat window.
 
-**MVP Goal**: A working orchestrator agent on Elastic Agent Builder that can search an indexed Obsidian vault semantically, read/write notes directly, extract and classify tasks into Artemis with user confirmation, plan daily work using the 1-3-5 rule, and optionally interact via voice — submitted as a hackathon entry by February 27, 2026.
+Beyond the core orchestration, Athena includes a **persistent memory system** (user profile + agent memory injected into every conversation), a **proactive heartbeat service** that periodically checks on overdue tasks and deadlines, and a **vault-based skills system** for reusable multi-step workflows like morning routines and weekly reviews.
+
+**MVP Goal**: A working orchestrator agent on Elastic Agent Builder that can search an indexed Obsidian vault semantically, read/write notes directly, extract and classify tasks into Artemis with user confirmation, plan daily work using the 1-3-5 rule, remember past conversations, execute reusable workflows, and interact via voice — submitted as a hackathon entry by February 27, 2026.
 
 ---
 
@@ -80,20 +82,34 @@ Athena also supports **voice interaction** as a first-class input/output mode. Y
 
 **Infrastructure:**
 - ✅ Elasticsearch Cloud Serverless (2 indices: notes, conversations)
-- ✅ Single unified MCP server (Vault + Artemis + Knowledge + Research tools)
+- ✅ Single unified MCP server (Vault + Artemis + Knowledge + Research + Skills tools)
 - ✅ Docker volume mounting for vault filesystem access
-- ✅ Sample Obsidian vault with 15-20 demo notes
-- ✅ Agent Builder built-in chat UI (primary) + voice-enabled thin client
+- ✅ Sample Obsidian vault with 23 demo notes across 7 folders
+- ✅ Embedded chat sidebar in Artemis React dashboard with voice support
+- ✅ Agent Builder chat UI as secondary interface
+- ✅ Monorepo — Artemis backend + frontend merged into single repository
 
 **Research:**
-- ✅ Web search capability (Tavily or Brave Search free tier)
+- ✅ Web search capability (Brave Search free tier)
 - ✅ URL fetching and content extraction
+
+**Memory & Proactivity:**
+- ✅ Persistent user profile and agent memory injected into every conversation
+- ✅ Conversation summaries saved to Elasticsearch and daily notes
+- ✅ Proactive heartbeat service — periodic check-ins for overdue tasks and deadlines
+- ✅ Chat conversation persistence across page refresh (localStorage)
+
+**Skills:**
+- ✅ Vault-based runtime skills — reusable multi-step workflows (morning routine, meeting debrief, weekly review)
+- ✅ Skill CRUD via MCP tool (list, load, create, edit, delete)
+
+**Developer Experience:**
+- ✅ One-command setup automation (`./setup.sh`) — env validation, DB migration, ES indexing, Agent Builder API
+- ✅ SQL migration for Supabase schema
 
 ### Out of Scope (Post-MVP / Future)
 
 **Deferred:**
-- ❌ Custom chat frontend embedded in Artemis
-- ❌ Real-time WebSocket updates in Artemis when agent creates tasks
 - ❌ Multi-user / authentication
 - ❌ Elastic Workflows automation (note watcher, daily planning assistant)
 - ❌ Wake word detection ("Hey Athena")
@@ -103,7 +119,6 @@ Athena also supports **voice interaction** as a first-class input/output mode. Y
 - ❌ Sync with cloud-hosted Obsidian vaults (iCloud, Sync)
 - ❌ Integration with external tools (Slack, email, calendar)
 - ❌ Fine-tuned embeddings model
-- ❌ Advanced analytics (weekly reviews, trend analysis)
 - ❌ Bulk vault operations (bulk tag, bulk move, bulk metadata updates)
 - ❌ Backlink analysis and graph traversal
 
@@ -170,15 +185,19 @@ Athena also supports **voice interaction** as a first-class input/output mode. Y
 ### High-Level Architecture
 
 ```
-User ←→ Voice Layer (STT/TTS) ←→ Agent Builder (Athena) ←→ Elasticsearch
-              ↓ MCP Protocol                                  ↑ ES|QL
-         Athena MCP Server                                     |
-           ├── Vault tools     → Obsidian Vault (filesystem)   |
-           ├── Artemis tools   → Artemis REST API (:8000)      |
-           ├── Knowledge tools → Elasticsearch (write-back)     |
-           └── Research tools  → Web search + URL fetch         |
-                                                                |
-         Indexer CLI ──────── Obsidian Vault → Elasticsearch ───┘
+User ←→ Artemis Dashboard (React + Chat Sidebar)
+              ↓ Voice Proxy (STT/TTS)
+         Agent Builder (Athena) ←→ Elasticsearch
+              ↓ MCP Protocol (Streamable HTTP)       ↑ ES|QL
+         Athena MCP Server                            |
+           ├── Vault tools     → Obsidian Vault       |
+           ├── Artemis tools   → Artemis REST API     |
+           ├── Knowledge tools → Elasticsearch         |
+           ├── Research tools  → Web search + URL      |
+           └── Skills tools    → Vault workflows       |
+                                                       |
+         Indexer CLI ──── Obsidian Vault → ES ─────────┘
+         Heartbeat Service ──→ Converse API ──→ Daily Notes
 ```
 
 ### Dual-Path Knowledge Access
@@ -208,74 +227,121 @@ Voice sits entirely in the client layer. The agent never knows if input came fro
 
 ### Architecture Style: Simple Modular
 
-Not VSA. Athena's sub-projects (a CLI indexer, an MCP server, and a thin voice client) don't map to VSA's routes/service/repository pattern. We borrow good ideas — centralized config, separation of concerns, one file = one job — without the layered ceremony.
+Not VSA. Athena's 8 sub-projects don't map to VSA's routes/service/repository pattern. We borrow good ideas — centralized config, separation of concerns, one file = one job — without the layered ceremony.
 
 ### Directory Structure
 
 ```
 /home/stardust/Athena/
 ├── .claude/                        # Claude Code configuration
-│   ├── commands/
-│   │   └── create-prd.md
-│   └── settings.json
+│   ├── commands/                   # Slash commands (commit, ship, validate, etc.)
+│   └── skills/                     # Developer skills (customize, add-integration, etc.)
 ├── .gitignore
 ├── .env.example
-├── docker-compose.yml
+├── docker-compose.yml              # 6 services: artemis, mcp-server, voice-proxy, frontend, heartbeat, ngrok
+├── nginx.conf                      # Frontend reverse proxy + /athena → voice-proxy
+├── setup.sh                        # One-command project bootstrap
 ├── README.md
 ├── LICENSE (MIT)
 ├── PRD.md
+├── DEVLOG.md
 │
-├── indexer/                         # Obsidian → Elasticsearch sync
+├── services/
+│   └── artemis-backend/            # Artemis FastAPI backend (merged from Artemis repo)
+│       ├── pyproject.toml
+│       └── src/                    # FastAPI app, Supabase client, routes, models
+│
+├── frontend/                       # Artemis React frontend (merged from Artemis repo)
+│   ├── package.json
+│   ├── Dockerfile
+│   └── src/
+│       ├── App.tsx                 # Routes: dashboard, tasks, plan, pomodoro, analytics
+│       ├── design-system/          # Glassmorphism component library
+│       ├── hooks/                  # useAthenaChat, useAthenaVoice, useTasks, etc.
+│       ├── stores/                 # chatStore (persistent), timerStore
+│       ├── lib/                    # api.ts, athena-api.ts
+│       └── pages-new/             # Dashboard, Tasks, DailyPlan, Pomodoro, Analytics, Settings
+│
+├── indexer/                        # Obsidian → Elasticsearch sync
 │   ├── pyproject.toml
 │   └── src/
-│       ├── __init__.py
-│       ├── config.py                # ES URL, API key, vault path, index names
-│       ├── mappings.py              # Elasticsearch index mapping definitions
-│       ├── parser.py                # .md file → dict (frontmatter + content + checksum)
-│       ├── indexer.py               # Bulk index parsed documents into Elasticsearch
-│       ├── watcher.py               # watchdog file watcher for live sync
-│       └── cli.py                   # CLI entry points: index, watch, setup-indices
+│       ├── config.py               # ES URL, API key, vault path, index names
+│       ├── mappings.py             # Elasticsearch index mapping definitions
+│       ├── parser.py               # .md file → dict (frontmatter + content + checksum)
+│       ├── indexer.py              # Bulk index parsed documents into Elasticsearch
+│       ├── watcher.py              # watchdog file watcher for live sync
+│       └── cli.py                  # CLI entry points: index, watch, setup-indices
 │
-├── mcp-server/                      # Unified MCP server
+├── mcp-server/                     # Unified MCP server (Streamable HTTP transport)
 │   ├── pyproject.toml
 │   ├── Dockerfile
 │   └── src/
-│       ├── __init__.py
-│       ├── config.py                # Vault path, Artemis URL, ES URL, API keys
-│       ├── server.py                # MCP server setup + SSE transport
-│       ├── artemis_client.py        # httpx wrapper for Artemis REST API
-│       ├── es_client.py             # Elasticsearch client for knowledge write-back
-│       ├── vault_manager.py         # Obsidian vault filesystem access (read/write/query)
+│       ├── config.py               # Vault path, Artemis URL, ES URL, API keys
+│       ├── server.py               # FastMCP setup, adapter init, tool registration
+│       ├── __main__.py             # Entry point (avoids double-import)
+│       ├── artemis_client.py       # httpx wrapper for Artemis REST API
+│       ├── es_client.py            # Elasticsearch client for knowledge write-back
+│       ├── vault_manager.py        # Obsidian vault filesystem access (read/write/query)
 │       └── tools/
-│           ├── __init__.py
-│           ├── vault.py             # 3 vault MCP tools (query, read, manage)
-│           ├── artemis.py           # 7 Artemis MCP tools
-│           ├── knowledge.py         # 2 knowledge write-back tools (ES)
-│           └── research.py          # 2 research tools (web search, URL fetch)
+│           ├── vault.py            # 3 vault MCP tools (query, read, manage)
+│           ├── artemis.py          # 7 Artemis MCP tools
+│           ├── knowledge.py        # 1 knowledge write-back tool (ES + daily note)
+│           ├── research.py         # 2 research tools (web search, URL fetch)
+│           └── skills.py           # 1 skills tool (5 operations: list, load, create, edit, delete)
 │
-├── voice-client/                    # Thin voice-enabled web client
-│   ├── index.html                   # Single-page app with mic/speaker controls
-│   ├── voice.js                     # Whisper STT + OpenAI TTS integration
-│   └── style.css                    # Minimal styling
+├── voice-client/                   # Voice proxy server + static voice UI
+│   ├── pyproject.toml
+│   ├── Dockerfile
+│   ├── serve.py                    # aiohttp server: /api/chat, /api/transcribe, /api/speak
+│   ├── index.html                  # Standalone voice interface (fallback)
+│   ├── voice.js                    # Whisper STT + OpenAI TTS integration
+│   └── style.css
 │
-├── agent-config/                    # Agent Builder configuration (tracked in git)
-│   ├── system-prompt.md             # Athena persona and behavioral rules
+├── heartbeat/                      # Proactive agent check-in service
+│   ├── pyproject.toml
+│   ├── Dockerfile
+│   └── src/
+│       ├── config.py               # HeartbeatSettings (interval, active hours)
+│       ├── heartbeat.py            # APScheduler + converse API + daily note alerts
+│       └── __main__.py
+│
+├── scripts/                        # Setup automation
+│   ├── pyproject.toml
+│   ├── config.py                   # Shared SetupConfig
+│   ├── validate_env.py             # Credential + connectivity checks
+│   ├── setup_supabase.py           # Postgres DDL execution
+│   ├── setup_elasticsearch.py      # ES indices + vault indexing
+│   ├── setup_agent_builder.py      # Kibana API: tools + connector + agent
+│   ├── verify.py                   # End-to-end health check
+│   └── setup.py                    # Main orchestrator with --phase CLI
+│
+├── supabase/
+│   └── migrations/
+│       └── 001_initial_schema.sql  # Tasks, daily_plans, pomodoro_sessions tables
+│
+├── agent-config/                   # Agent Builder configuration (tracked in git)
+│   ├── system-prompt.md            # Athena persona (281 lines — workflows, guardrails, memory)
 │   ├── setup-guide.md              # How to configure in Kibana
-│   └── tools/                       # ES|QL tool definitions (JSON exports)
+│   └── tools/                      # ES|QL tool definitions (JSON exports)
 │
-├── sample-vault/                    # Demo Obsidian vault
+├── sample-vault/                   # Demo Obsidian vault (23 notes, 7 folders)
 │   ├── Projects/
 │   ├── Ideas/
 │   ├── Meeting Notes/
 │   ├── Daily Notes/
-│   └── Research/
+│   ├── Research/
+│   ├── Learning/
+│   └── Meta/                       # user-profile.md, memory.md, heartbeat.md, Skills/
+│
+├── decisions/                      # Architecture Decision Records
+│   ├── 001-tunnel-ngrok-over-alternatives.md
+│   ├── 002-single-agent-over-sub-agents.md
+│   ├── 003-openclaw-patterns-research.md
+│   └── 004-monorepo-merge-strategy.md
 │
 ├── docs/
-│   ├── architecture.md
-│   └── architecture.mermaid
 │
 └── devpost/
-    ├── description.md
     └── screenshots/
 ```
 
@@ -284,9 +350,12 @@ Not VSA. Athena's sub-projects (a CLI indexer, an MCP server, and a thin voice c
 1. **VaultManager Pattern**: Centralized filesystem access class (inspired by obsidian-ai-agent) with path validation, directory traversal prevention, frontmatter parsing, and all CRUD operations. All vault tools delegate to this single class.
 2. **Adapter Pattern**: `artemis_client.py`, `es_client.py`, and `vault_manager.py` each adapt an external system into a clean internal interface that MCP tools consume.
 3. **3-Tool Consolidation**: Vault access uses three tools with operation parameters rather than many single-purpose tools — following Anthropic's "fewer tools, more parameters" best practice.
-4. **Configuration via Environment**: All secrets and URLs in `.env`, loaded via `pydantic-settings`.
-5. **Checksum-based Deduplication**: Indexer computes MD5 checksums to skip re-indexing unchanged files.
+4. **Configuration via Environment**: All secrets and URLs in `.env`, loaded via `pydantic-settings` with `extra: "ignore"` so each sub-project ignores vars it doesn't need.
+5. **Checksum-based Deduplication**: Indexer computes MD5 checksums to skip re-indexing unchanged files. SHA-256 of vault-relative path used as deterministic ES `_id`.
 6. **Confirm Destructive**: Vault write/delete operations require explicit confirmation parameter to prevent accidental data loss.
+7. **Memory Injection**: User profile and agent memory files from the vault are injected into every conversation via `configuration_overrides.systemPromptAddition` in the converse API.
+8. **Heartbeat Suppression**: Proactive check-ins return `HEARTBEAT_OK` when nothing needs attention — silently discarded (no alert). Real alerts are appended to the daily note.
+9. **Vault-based Skills**: Reusable multi-step workflows stored as Markdown in `Meta/Skills/`, loaded and executed by the agent at runtime via MCP tool.
 
 ---
 
@@ -350,25 +419,39 @@ Plus **built-in search tool** on `athena-notes` index for semantic/hybrid search
 
 | Tool | Purpose | Writes To |
 |------|---------|-----------|
-| `save_conversation_summary` | Persist conversation context for future recall | `athena-conversations` index |
+| `save_conversation_summary` | Persist conversation context for future recall | `athena-conversations` index + daily note in vault |
 
-Note: `save_note` is now handled by `vault_manage.create_note` which writes to the filesystem. The indexer (or watcher) syncs it to Elasticsearch.
+Conversation summaries are dual-written: indexed in Elasticsearch for semantic search, and appended to the day's daily note for vault continuity.
 
 ### MCP Tools — Research Group
 
 | Tool | Purpose |
 |------|---------|
-| `web_search` | Search the web via Tavily/Brave API, return top results with snippets |
+| `web_search` | Search the web via Brave API, return top results with snippets |
 | `fetch_url` | Fetch a URL, extract text content via html2text, return summary |
 
+### MCP Tools — Skills Group
+
+**`skill_manager`** — Discover, load, and manage reusable multi-step workflows stored in `Meta/Skills/`
+
+| Operation | Parameters | Purpose |
+|-----------|-----------|---------|
+| `list_skills` | none | List all available skills with names and trigger phrases |
+| `load_skill` | `name` (str) | Load a skill's full steps and instructions |
+| `create_skill` | `name` (str), `content` (str) | Create a new skill from conversation (requires confirmation) |
+| `edit_skill` | `name` (str), `content` (str) | Update an existing skill's content |
+| `delete_skill` | `name` (str), `confirm_destructive` (bool) | Delete a skill (requires confirmation flag) |
+
 ### Tool Priority
+
+All priorities below have been implemented and validated.
 
 | Priority | Tools | Rationale |
 |----------|-------|-----------|
 | **P0 — Demo-critical** | `search_notes`, `vault_read`, `vault_manage` (create, append), `artemis_create_task`, `artemis_list_tasks`, `artemis_get_daily_plan`, `artemis_assign_to_plan`, `save_conversation_summary` | Core demo flow: search → read → extract → create → plan |
-| **P1 — Full experience** | `vault_query`, `vault_manage` (edit, move, delete), `artemis_complete_task`, `artemis_get_analytics`, `artemis_start_pomodoro`, `get_recent_notes`, `get_notes_by_tag` | Complete vault management + productivity tracking |
+| **P1 — Full experience** | `vault_query`, `vault_manage` (edit, move, delete), `artemis_complete_task`, `artemis_get_analytics`, `artemis_start_pomodoro`, `get_recent_notes`, `get_notes_by_tag`, `skill_manager` | Complete vault management + productivity tracking + workflows |
 | **P2 — Nice-to-have** | `web_search`, `fetch_url`, `count_notes_by_tag`, `get_conversation_history` | Research capability + analytics |
-| **P3 — Voice** | Whisper STT, OpenAI TTS, voice client UI | Voice I/O layer (independent of backend) |
+| **P3 — Voice** | Whisper STT, OpenAI TTS, embedded chat sidebar with voice mode | Voice I/O layer (independent of backend) |
 
 ---
 
@@ -388,7 +471,7 @@ Note: `save_note` is now handled by `vault_manage.create_note` which writes to t
 |-----------|---------|---------|
 | Python | 3.12+ | Runtime |
 | `uv` | Latest | Project management, dependency resolution |
-| `elasticsearch[async]` | >=9.3.0 | Elasticsearch client for bulk indexing |
+| `elasticsearch[async]` | >=8.17.0 | Elasticsearch client for bulk indexing |
 | `python-frontmatter` | Latest | Parse Obsidian YAML frontmatter from .md files |
 | `watchdog` | Latest | Filesystem watcher for live vault sync |
 | `pydantic-settings` | Latest | Configuration management |
@@ -399,37 +482,64 @@ Note: `save_note` is now handled by `vault_manage.create_note` which writes to t
 |-----------|---------|---------|
 | Python | 3.12+ | Runtime |
 | `uv` | Latest | Project management |
-| `mcp` | Latest | MCP protocol server implementation (SSE transport) |
-| `httpx` | Latest | Async HTTP client for Artemis REST API |
-| `elasticsearch[async]` | >=9.3.0 | ES client for knowledge write-back |
-| `python-frontmatter` | Latest | Parse/write YAML frontmatter in vault notes |
-| `pydantic` | >=2.0 | Data validation for tool inputs/outputs |
-| `pydantic-settings` | Latest | Configuration management |
+| `mcp[cli]` | >=1.3.0 | MCP protocol server implementation (Streamable HTTP transport) |
+| `httpx` | >=0.27.0 | Async HTTP client for Artemis REST API |
+| `elasticsearch[async]` | >=8.17.0 | ES client for knowledge write-back |
+| `python-frontmatter` | >=1.1.0 | Parse/write YAML frontmatter in vault notes |
+| `pydantic` | >=2.7.0 | Data validation for tool inputs/outputs |
+| `pydantic-settings` | >=2.5.0 | Configuration management |
 | `html2text` | Latest | URL content extraction (research tools) |
 
-### Voice Client (`voice-client/`)
+### Voice Proxy (`voice-client/`)
 
 | Technology | Version | Purpose |
 |-----------|---------|---------|
-| HTML/JS/CSS | Vanilla | Single-page voice-enabled interface |
-| MediaRecorder API | Browser built-in | Audio capture from microphone |
+| Python | 3.12+ | Runtime |
+| `aiohttp` | Latest | HTTP server proxying to Kibana converse API |
+| `python-frontmatter` | Latest | Parse memory files for injection |
 | OpenAI Whisper API | Latest | Speech-to-text transcription |
 | OpenAI TTS API | Latest | Text-to-speech (voices: alloy, echo, fable, onyx, nova, shimmer) |
+| HTML/JS/CSS | Vanilla | Standalone voice fallback UI |
 
-### Existing Dependencies
+### Artemis Frontend (`frontend/`)
 
-| Technology | Location | Purpose |
-|-----------|----------|---------|
-| Artemis Backend | `/home/stardust/Artemis/backend/` | FastAPI + Supabase — task management, daily plans, pomodoro, analytics |
-| Artemis Frontend | `/home/stardust/Artemis/frontend/` | React + Vite + TypeScript — dashboard UI |
+| Technology | Version | Purpose |
+|-----------|---------|---------|
+| React | 18.3 | UI framework |
+| TypeScript | 5.5+ | Type-safe frontend |
+| Vite | 5.4 | Build tool |
+| Tailwind CSS | 3.4 | Utility-first styling |
+| Zustand | 4.5 | State management (chat, timer) with localStorage persistence |
+| TanStack Query | 5.0 | Server state, cache invalidation |
+| React Router | 6.26 | Client-side routing |
+| Motion | 12.34 | Animations |
+| MediaRecorder API | Browser built-in | Audio capture from microphone |
+
+### Heartbeat Service (`heartbeat/`)
+
+| Technology | Version | Purpose |
+|-----------|---------|---------|
+| Python | 3.12+ | Runtime |
+| APScheduler | 3.11 | Cron-based periodic scheduling |
+| `httpx` | Latest | Calls Kibana converse API |
+| `python-frontmatter` | Latest | Reads heartbeat checklist from vault |
+
+### Artemis Backend (`services/artemis-backend/`)
+
+| Technology | Version | Purpose |
+|-----------|---------|---------|
+| Python | 3.12+ | Runtime |
+| FastAPI | Latest | REST API framework |
+| Supabase (PostgreSQL) | Latest | Database for tasks, plans, pomodoro sessions |
+| Pydantic | v2 | Request/response models |
 
 ### Infrastructure
 
 | Technology | Purpose |
 |-----------|---------|
-| Docker + Docker Compose | Orchestrate MCP server + Artemis stack + vault volume mount |
-| ngrok | Expose local MCP server to Elastic Cloud during development |
-| Railway or Render | Production deployment for demo recording |
+| Docker + Docker Compose | Orchestrate 6 services: artemis, mcp-server, voice-proxy, frontend, heartbeat (opt-in), ngrok (opt-in) |
+| ngrok | Expose local MCP server to Elastic Cloud via static domain (`sylas-saporific-ilona.ngrok-free.dev`) |
+| nginx | Reverse proxy for frontend — SPA routing + `/athena` → voice-proxy |
 
 ---
 
@@ -441,7 +551,7 @@ All configuration via environment variables, loaded with `pydantic-settings`:
 
 ```env
 # Elasticsearch
-ELASTIC_CLOUD_ID=<deployment-cloud-id>
+ELASTIC_URL=<serverless-endpoint-url>
 ELASTIC_API_KEY=<api-key>
 
 # Obsidian Vault
@@ -455,11 +565,31 @@ CONVERSATIONS_INDEX=athena-conversations
 ARTEMIS_BASE_URL=http://localhost:8000
 MCP_SERVER_PORT=8001
 
+# Supabase (Artemis backend)
+SUPABASE_URL=<supabase-project-url>
+SUPABASE_ANON_KEY=<supabase-anon-key>
+SUPABASE_DB_URL=<postgres-connection-string>  # optional, for setup.sh SQL migration
+CORS_ORIGINS=http://localhost:3000
+
 # Voice (optional)
 OPENAI_API_KEY=<key>
 
-# Research (stretch)
-TAVILY_API_KEY=<key>  # or BRAVE_API_KEY
+# Research (optional)
+BRAVE_API_KEY=<key>
+TAVILY_API_KEY=<key>
+
+# ngrok tunnel (optional — for Elastic Cloud connectivity)
+NGROK_AUTHTOKEN=<auth-token>
+NGROK_DOMAIN=sylas-saporific-ilona.ngrok-free.dev
+
+# Heartbeat (optional — proactive check-ins)
+HEARTBEAT_INTERVAL_MINUTES=30
+HEARTBEAT_ACTIVE_HOUR_START=8
+HEARTBEAT_ACTIVE_HOUR_END=22
+
+# Agent Builder
+KIBANA_URL=<kibana-endpoint-url>
+KIBANA_API_KEY=<kibana-api-key>
 ```
 
 ### Vault Security
@@ -488,12 +618,16 @@ TAVILY_API_KEY=<key>  # or BRAVE_API_KEY
 ### Networking
 
 ```
-Agent Builder (Elastic Cloud) → MCP Server: MCP protocol over SSE (public URL via ngrok)
-MCP Server → Artemis Backend: HTTP to localhost:8000 (Docker network)
-MCP Server → Elasticsearch: HTTPS to Elastic Cloud endpoint
-MCP Server → Obsidian Vault: Filesystem via Docker volume mount
-Voice Client → OpenAI API: HTTPS (Whisper STT + TTS)
-Voice Client → Agent Builder: HTTPS (chat API)
+Agent Builder (Elastic Cloud) → MCP Server: MCP Streamable HTTP (public URL via ngrok static domain)
+MCP Server → Artemis Backend: HTTP to artemis:8000 (Docker network)
+MCP Server → Elasticsearch: HTTPS to Elastic Cloud Serverless endpoint
+MCP Server → Obsidian Vault: Filesystem via Docker volume mount (/vault:rw)
+Voice Proxy → OpenAI API: HTTPS (Whisper STT + TTS)
+Voice Proxy → Agent Builder: HTTPS (Kibana converse API)
+Frontend → Voice Proxy: HTTP via nginx reverse proxy (/athena → voice-proxy:3001)
+Frontend → Artemis Backend: HTTP to localhost:8000 (direct or via Vite dev proxy)
+Heartbeat → Agent Builder: HTTPS (Kibana converse API, periodic)
+Heartbeat → Obsidian Vault: Filesystem via Docker volume mount (alert write-back)
 ```
 
 ---
@@ -619,7 +753,7 @@ A successful MVP demonstrates the complete knowledge-to-action loop in a 3-minut
 - ✅ Athena can build a 1-3-5 daily plan from existing pending tasks
 - ✅ Athena can report on productivity using Artemis analytics
 - ✅ Athena can save conversation summaries for future context
-- ✅ Indexer can process 15-20 Obsidian notes with frontmatter into Elasticsearch
+- ✅ Indexer can process 23 Obsidian notes with frontmatter into Elasticsearch
 - ✅ Semantic search returns relevant results (not just keyword matches)
 - ✅ User can speak to Athena and hear a voice response back
 - ✅ Voice mode can be toggled on/off
@@ -638,6 +772,8 @@ A successful MVP demonstrates the complete knowledge-to-action loop in a 3-minut
 
 - "Wow moment #1": User speaks to Athena → tasks materialize in Artemis's Eisenhower Matrix
 - "Wow moment #2": User says "save this as a note" → note appears in the Obsidian vault
+- "Wow moment #3": Athena greets user by name and references their current projects (memory injection)
+- "Wow moment #4": User says "run my morning routine" → agent executes multi-step skill automatically
 - Smooth conversational flow — no awkward pauses, no tool errors visible
 - Clear demonstration of bidirectional data flow (read notes + write notes + create tasks + save conversations)
 
@@ -645,73 +781,82 @@ A successful MVP demonstrates the complete knowledge-to-action loop in a 3-minut
 
 ## 12. Implementation Phases
 
-### Phase 1: Foundation (Days 1-4)
+### Phase 1: Foundation (Days 1-7) — COMPLETE
 
-**Goal**: Get data flowing — vault indexed, agent searching, MCP server proxying to Artemis with vault access.
+**Goal**: Get data flowing — vault indexed, agent searching, MCP server proxying to Artemis with vault access, deployed to Elastic Cloud.
 
 **Deliverables:**
 - ✅ Elastic Cloud Serverless trial active with LLM connector configured
 - ✅ ELSER inference endpoint set up for semantic search
 - ✅ `athena-notes` and `athena-conversations` indices created with mappings
-- ✅ Indexer project: `parser.py`, `indexer.py`, `cli.py`, `mappings.py`, `config.py`
-- ✅ Sample vault with 15-20 notes created and indexed
-- ✅ Agent Builder "Athena" agent with system prompt and built-in search
-- ✅ ES|QL tools: `search_notes`, `get_recent_notes`, `get_notes_by_tag`, `count_notes_by_tag`
-- ✅ MCP server with all 7 Artemis tools implemented
-- ✅ MCP server registered in Agent Builder via ngrok
+- ✅ Indexer project: `parser.py`, `indexer.py`, `cli.py`, `mappings.py`, `config.py`, `watcher.py`
+- ✅ Sample vault with 17 notes created and indexed (later expanded to 23)
+- ✅ MCP server with 13 tools (3 vault + 7 Artemis + 1 knowledge + 2 research)
+- ✅ VaultManager class with path validation, frontmatter parsing, all CRUD operations
+- ✅ Agent Builder "Athena" agent with 281-line system prompt and 19 tools
+- ✅ ES|QL tools: `search_notes`, `get_recent_notes`, `get_notes_by_tag`, `count_notes_by_tag`, `get_conversation_history` + `semantic_search`
+- ✅ MCP server deployed via ngrok, registered in Agent Builder
 - ✅ Docker volume mount for vault access configured
+- ✅ Transport: Streamable HTTP (Elastic requirement, not SSE)
+- ✅ pyright + ruff validation on all sub-projects
 
-**Validation**: Ask agent "What are my notes about [topic]?" → get relevant results. Ask agent to create a task → it appears in Artemis at `localhost:8000/tasks`.
+**Validation**: Agent responds in Kibana chat. Semantic search returns relevant results. Tasks created via agent appear in Artemis.
 
-### Phase 2: Vault Access + Intelligence (Days 5-8)
+### Phase 2: Unified Experience + Intelligence (Days 8-13) — COMPLETE
 
-**Goal**: Give the agent direct vault read/write, smart task extraction, and daily planning.
-
-**Deliverables:**
-- ✅ `VaultManager` class with path validation, frontmatter parsing, all CRUD operations
-- ✅ Vault MCP tools: `vault_query`, `vault_read`, `vault_manage`
-- ✅ Knowledge write-back tool: `save_conversation_summary`
-- ✅ `get_conversation_history` ES|QL tool
-- ✅ System prompt refined for accurate Eisenhower classification
-- ✅ Daily planning flow: list tasks → check plan → suggest 1-3-5 → confirm → assign
-- ✅ Research tools: `web_search`, `fetch_url`
-- ✅ Error handling on all MCP tools
-- ✅ Edge cases handled (empty vault, full plan slots, no pending tasks)
-
-**Validation**: Full end-to-end flow — search notes → read specific note → extract tasks → create with confirmation → plan day. Agent saves a new note to the vault. Conversation summary saved to ES.
-
-### Phase 3: Voice + Demo Prep (Days 9-13)
-
-**Goal**: Add voice capabilities and polish for a compelling 3-minute demo.
+**Goal**: Embed Athena in Artemis, add voice, consolidate into Docker Compose.
 
 **Deliverables:**
-- ✅ Voice client: HTML page with microphone capture (MediaRecorder API)
-- ✅ Whisper API integration for speech-to-text
-- ✅ OpenAI TTS integration for text-to-speech
-- ✅ Voice/text toggle in client UI
-- ✅ File watcher (`watchdog`) for live vault sync
-- ✅ Analytics narration (agent interprets numbers, not just reports them)
-- ✅ Sample vault finalized with demo-optimized content
-- ✅ Demo script written and rehearsed (2-3 practice runs)
-- ✅ Architecture diagram (Mermaid)
-- ✅ README with setup instructions
+- ✅ Voice proxy server (aiohttp) — Whisper STT, OpenAI TTS, Kibana converse API proxy
+- ✅ Voice proxy Dockerfile + Docker Compose integration
+- ✅ Chat sidebar embedded in Artemis React dashboard (glassmorphism, markdown, voice mode)
+- ✅ React hooks: `useAthenaChat`, `useVoiceRecorder`, `useAthenaVoice`
+- ✅ Zustand chat store with conversation management
+- ✅ `docker compose up` starts full stack (4 services initially)
+- ✅ nginx reverse proxy for frontend + voice-proxy routing
+- ✅ TanStack Query cache invalidation on agent actions
+- ✅ End-to-end validation on Linux (28/28 checks pass)
+- ✅ OpenClaw/NanoClaw pattern research (ADR-003)
 
-**Validation**: Complete demo run-through with voice interaction, no errors, under 3 minutes.
+**Validation**: Full chat + voice flow through Artemis dashboard. Agent creates tasks → dashboard updates live.
 
-### Phase 4: Ship (Days 14-17)
+### Phase 3: Memory, Proactivity, Polish (Days 14-24) — COMPLETE
+
+**Goal**: Add memory, heartbeat, skills, monorepo, setup automation, polish for demo.
+
+**Deliverables:**
+- ✅ Monorepo merge — Artemis backend + frontend copied into single repo (ADR-004)
+- ✅ ngrok static domain — no more URL churn across restarts
+- ✅ Full end-to-end validation (28/28 checks pass)
+- ✅ Memory system — `Meta/user-profile.md`, `Meta/memory.md`, injected via `systemPromptAddition`
+- ✅ Conversation summaries dual-written to ES + daily notes
+- ✅ System prompt synced to Agent Builder (16.3k chars)
+- ✅ Heartbeat service — APScheduler, converse API, HEARTBEAT_OK suppression, daily note alerts
+- ✅ Setup automation — `./setup.sh` one-command bootstrap (env validation, SQL migration, ES indexing, Kibana API)
+- ✅ SQL migration for Supabase schema (tasks, daily_plans, pomodoro_sessions)
+- ✅ Skills system — `skill_manager` MCP tool (5 operations), 3 sample skills
+- ✅ Claude Code developer skills (`customize`, `add-integration`)
+- ✅ `/ship` command (devlog + commit + push workflow)
+- ✅ Persistent chat conversations (localStorage + history panel)
+- ✅ Pomodoro polling fix (WebSocket-first, HTTP fallback)
+- ✅ Full validation pass: 13/13 checks across 8 sub-projects, 0 errors
+
+**Validation**: Complete agent flow with memory, skills, all tools working. Docker Compose starts 6 services.
+
+### Phase 4: Ship (Days 25-27) — IN PROGRESS
 
 **Goal**: Record, polish, submit.
 
 **Deliverables:**
-- ✅ 3-minute demo video recorded (OBS) and uploaded (YouTube unlisted)
+- [ ] 3-minute demo video recorded (OBS) and uploaded (YouTube unlisted)
 - ✅ Final code cleanup and documentation pass
-- ✅ `docker-compose.yml` for full stack deployment
+- ✅ `docker-compose.yml` for full stack deployment (6 services)
 - ✅ `.env.example` with all variables documented
-- ✅ Devpost description (~400 words)
+- [ ] Devpost description (~400 words)
 - ✅ MIT license
-- ✅ Social post on X tagging @elastic_devs, @elastic
-- ✅ Screenshots captured
-- ✅ Submission reviewed against judging criteria
+- [ ] Social post on X tagging @elastic_devs, @elastic
+- [ ] Screenshots captured
+- [ ] Submission reviewed against judging criteria
 
 **Validation**: Devpost submission is complete with all required fields. GitHub repo is public with MIT license.
 
@@ -721,12 +866,11 @@ A successful MVP demonstrates the complete knowledge-to-action loop in a 3-minut
 
 ### Post-MVP Enhancements
 
-- **Custom chat UI in Artemis**: Embed Athena's chat interface in the Artemis dashboard for a unified experience
-- **Real-time task updates**: WebSocket integration so Artemis dashboard updates live when agent creates tasks
 - **Elastic Workflows**: Automated `note_watcher` (scan new notes for tasks) and `daily_planning_assistant` (morning plan suggestions)
-- **Weekly review**: Agent generates a weekly productivity report combining Artemis analytics + knowledge base activity
+- **Streaming responses**: SSE token-by-token streaming from agent to chat sidebar for lower perceived latency
 - **Bulk vault operations**: Bulk tag, bulk move, bulk metadata updates across many notes at once
 - **Backlink analysis**: Traverse Obsidian-style `[[wikilinks]]` to find related content through graph structure
+- **uv workspaces**: Unify Python sub-projects under a root `pyproject.toml` with `[tool.uv.workspace]`
 
 ### Voice Enhancements
 
@@ -757,8 +901,8 @@ A successful MVP demonstrates the complete knowledge-to-action loop in a 3-minut
 
 | # | Risk | Probability | Impact | Mitigation |
 |---|------|------------|--------|------------|
-| 1 | **Elastic Cloud trial expires before demo recorded** | Medium | Critical | Sign up immediately. Trial expires ~14 days later. Record demo by Day 14. Backup partial recording on Day 11. |
-| 2 | **MCP connection from Elastic Cloud to local server fails** | Medium | High | Have `Dockerfile` ready by Day 3. Test ngrok Day 5. If unstable, deploy to Railway/Render immediately. |
+| 1 | **Elastic Cloud trial expires before demo recorded** | Medium | Critical | Trial active since Feb 12. Must record demo before expiry (~Feb 26). All tools validated end-to-end. |
+| 2 | **MCP connection from Elastic Cloud to local server fails** | Low | High | ngrok static domain eliminates URL churn. Docker Compose includes ngrok service. Validated end-to-end on Day 15. |
 | 3 | **Agent creates tasks or modifies vault without user confirmation** | Medium | High | Add explicit "NEVER" rules in system prompt. Use `confirm_destructive` parameter for deletes. Test adversarially. |
 | 4 | **Vault path traversal or accidental file corruption** | Low | Critical | VaultManager validates all paths against vault root. Write operations create backups. Test with adversarial paths. |
 | 5 | **Voice transcription too slow or inaccurate for demo** | Low | Medium | Whisper API is fast (~1-2s). Fall back to text-only demo if issues arise. Voice is additive, not required for core flow. |
@@ -785,7 +929,7 @@ A successful MVP demonstrates the complete knowledge-to-action loop in a 3-minut
 | MCP Server Docs | https://www.elastic.co/docs/explore-analyze/ai-features/agent-builder/mcp-server | MCP integration |
 | OpenAI Whisper API | https://platform.openai.com/docs/guides/speech-to-text | STT for voice input |
 | OpenAI TTS API | https://platform.openai.com/docs/guides/text-to-speech | TTS for voice output |
-| Artemis (existing) | `/home/stardust/Artemis` | FastAPI + React + Supabase |
+| Artemis (merged) | `services/artemis-backend/` + `frontend/` | FastAPI + React + Supabase (monorepo) |
 | Devpost | https://elasticsearch.devpost.com/ | Submission platform |
 
 ### Elasticsearch Index Schemas
@@ -810,16 +954,18 @@ A successful MVP demonstrates the complete knowledge-to-action loop in a 3-minut
 
 - [ ] ~400 word project description on Devpost
 - [ ] ~3 minute demo video (YouTube unlisted)
-- [ ] Public GitHub repository with MIT license
+- [x] Public GitHub repository with MIT license
 - [ ] Social media post on X tagging @elastic_devs or @elastic
 - [ ] Architecture diagram (Mermaid) in repo and demo
-- [ ] Docker Compose for full stack
-- [ ] README with setup instructions
+- [x] Docker Compose for full stack (6 services)
+- [x] README with setup instructions
+- [x] One-command setup (`./setup.sh`)
 - [ ] Voice demo included in video
+- [ ] Screenshots captured
 
 ---
 
 *Created: February 12, 2026*
-*Updated: February 12, 2026*
+*Updated: February 18, 2026*
 *Project: Athena — Second Brain Orchestrator Agent*
 *Developer: Stratos Louvaris (solo)*
