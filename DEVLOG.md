@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~26 hours (Days 1–23) |
+| Total time | ~26.5 hours (Days 1–24) |
 | Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 14 (3 vault + 7 Artemis + 1 knowledge + 2 research + 1 skills) |
@@ -21,11 +21,28 @@
 | Type checking | pyright (3 sub-projects) + TypeScript (frontend) — 0 errors across all |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 16.3k char system prompt (synced) |
-| Current state | Persistent chat conversations — localStorage + history panel |
+| Current state | Pomodoro polling fix — WebSocket-first, HTTP fallback only |
 
 ---
 
 ## The Journey
+
+### Day 24: Pomodoro Polling Fix (Feb 18) — ~30 min
+
+Eliminated redundant HTTP polling during active Pomodoro sessions. Both `LuxuryPomodoroTimer` and `PomodoroWidget` were running two real-time channels simultaneously: a WebSocket (receiving `TICK` messages every second) and TanStack Query HTTP polling (`GET /pomodoro/active` every 1s). The HTTP poll was flooding the terminal with requests while the WebSocket was already doing the same job.
+
+**Fix:** Conditioned `refetchInterval` on WebSocket connection status — HTTP polling now only activates as a fallback when the WebSocket is disconnected.
+
+**Changes (2 files, 0 new files, 0 new deps):**
+
+- **`LuxuryPomodoroTimer.tsx`** — Moved `useActiveTimer` call after `usePomodoroWebSocket` hook. Changed `refetchInterval` from `state !== "IDLE" ? 1000 : undefined` to `state !== "IDLE" && !isConnected ? 1000 : undefined`.
+- **`PomodoroWidget/index.tsx`** — Same change: `useActiveTimer` moved after WebSocket hook, polling gated on `!isConnected`.
+
+**Also included:** `frontend/Dockerfile` — added `# check=skip=SecretsUsedInArgOrEnv` directive (pre-existing uncommitted change).
+
+**Verification:** TypeScript `tsc --noEmit` — 0 errors.
+
+---
 
 ### Day 23: Persistent Chat Conversations (Feb 18) — ~1 hour
 

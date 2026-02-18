@@ -38,15 +38,17 @@ export function LuxuryPomodoroTimer({ taskId, taskTitle, className }: LuxuryPomo
     setSession,
   } = useTimerStore()
 
-  const { data: activeTimer, refetch } = useActiveTimer({
-    refetchInterval: state !== "IDLE" ? 1000 : undefined,
-  })
   const startSession = useStartSession()
   const stopSession = useStopSession()
   const completeSession = useCompleteSession()
 
   const { isConnected, isConnecting, error, connect, disconnect } =
     usePomodoroWebSocket()
+
+  // Only poll HTTP when WebSocket is not connected (fallback)
+  const { data: activeTimer, refetch } = useActiveTimer({
+    refetchInterval: state !== "IDLE" && !isConnected ? 1000 : undefined,
+  })
 
   // Sync with server state on initial load and refetch
   useEffect(() => {
