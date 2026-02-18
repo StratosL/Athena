@@ -60,8 +60,8 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
             className={cn(
               "fixed bottom-20 right-6 lg:bottom-8 z-30",
               "w-14 h-14 rounded-full",
-              "bg-gradient-to-r from-luxury-indigo to-luxury-gold",
-              "text-white shadow-lg shadow-luxury-indigo/25",
+              "bg-gradient-to-r from-luxury-accent to-luxury-gold",
+              "text-white shadow-lg shadow-luxury-accent/25",
               "flex items-center justify-center"
             )}
             initial={{ scale: 0, opacity: 0 }}

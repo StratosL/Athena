@@ -10,24 +10,27 @@ export default {
       colors: {
         // Luxury Design System Colors
         luxury: {
-          // Background
-          'obsidian': '#0a0a0f',
-          'charcoal': '#151520',
-          'card': 'rgba(15, 23, 42, 0.4)',
+          // Background (CSS variables — theme-aware)
+          'obsidian': 'rgb(var(--luxury-obsidian-rgb) / <alpha-value>)',
+          'charcoal': 'rgb(var(--luxury-charcoal-rgb) / <alpha-value>)',
+          'card': 'var(--luxury-card)',
 
-          // Accents
+          // Accents (fixed per-quadrant, not theme-dependent)
           'gold': '#d4af37',
           'indigo': '#6366f1',
           'cyan': '#06b6d4',
           'orange': '#f97316',
           'slate': '#64748b',
 
-          // Text
-          'text-primary': '#f8fafc',
-          'text-secondary': '#94a3b8',
+          // Dynamic accent (CSS variable — follows settings)
+          'accent': 'rgb(var(--luxury-accent-rgb) / <alpha-value>)',
 
-          // Border
-          'border': 'rgba(255, 255, 255, 0.1)',
+          // Text (CSS variables — theme-aware)
+          'text-primary': 'rgb(var(--luxury-text-primary-rgb) / <alpha-value>)',
+          'text-secondary': 'rgb(var(--luxury-text-secondary-rgb) / <alpha-value>)',
+
+          // Border (CSS variable — theme-aware)
+          'border': 'var(--luxury-border)',
         },
 
         // Semantic Colors

@@ -200,7 +200,7 @@ export function TaskCreationModal({ isOpen, onClose }: TaskCreationModalProps) {
                     glassmorphismClasses,
                     "w-full px-4 py-2 text-luxury-text-primary placeholder:text-luxury-text-secondary",
                     "transition-all duration-300 resize-none",
-                    "focus:outline-none focus:ring-2 focus:ring-luxury-indigo focus:border-luxury-indigo"
+                    "focus:outline-none focus:ring-2 focus:ring-luxury-accent focus:border-luxury-accent"
                   )}
                 />
               </div>

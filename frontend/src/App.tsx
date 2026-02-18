@@ -9,6 +9,7 @@ import { Pomodoro } from "@/pages-new/Pomodoro"
 import { Onboarding } from "@/pages-new/Onboarding"
 import { DailyReflection } from "@/pages-new/DailyReflection"
 import { Guide } from "@/pages-new/Guide"
+import { useApplySettings } from "@/hooks/useApplySettings"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,6 +21,8 @@ const queryClient = new QueryClient({
 })
 
 function App() {
+  useApplySettings()
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>

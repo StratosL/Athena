@@ -19,7 +19,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                         glassmorphismClasses,
                         "w-full px-4 py-2 text-luxury-text-primary placeholder:text-luxury-text-secondary",
                         "transition-all duration-300",
-                        "focus:outline-none focus:ring-2 focus:ring-luxury-indigo focus:border-luxury-indigo",
+                        "focus:outline-none focus:ring-2 focus:ring-luxury-accent focus:border-luxury-accent",
                         error && "ring-2 ring-red-500 border-red-500",
                         disabled && "opacity-50 cursor-not-allowed",
                         className

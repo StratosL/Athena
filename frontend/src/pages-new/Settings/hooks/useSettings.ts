@@ -60,6 +60,8 @@ export function useSettings() {
       const updated = { ...prev, [key]: value }
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+        // Notify useApplySettings in the same tab
+        window.dispatchEvent(new Event("artemis-settings-change"))
       } catch (error) {
         console.error("Failed to save settings:", error)
       }
@@ -72,6 +74,7 @@ export function useSettings() {
     setSettings(DEFAULT_SETTINGS)
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_SETTINGS))
+      window.dispatchEvent(new Event("artemis-settings-change"))
     } catch (error) {
       console.error("Failed to reset settings:", error)
     }

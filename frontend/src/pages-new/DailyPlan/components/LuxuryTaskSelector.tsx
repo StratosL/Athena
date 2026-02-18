@@ -110,7 +110,7 @@ export function LuxuryTaskSelector({
                 className={cn(
                   "w-full text-left p-3 rounded-lg border border-luxury-border",
                   "bg-luxury-card hover:bg-white/5 transition-colors",
-                  "focus:outline-none focus:ring-2 focus:ring-luxury-indigo/50"
+                  "focus:outline-none focus:ring-2 focus:ring-luxury-accent/50"
                 )}
               >
                 <div className="flex items-start justify-between gap-2">

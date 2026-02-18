@@ -278,7 +278,7 @@ export function Settings() {
                 <div className="flex gap-3">
                   <button
                     onClick={exportSettings}
-                    className="px-4 py-2 rounded-lg bg-luxury-indigo text-white hover:bg-luxury-indigo/90 transition-colors"
+                    className="px-4 py-2 rounded-lg bg-luxury-accent text-white hover:bg-luxury-accent/90 transition-colors"
                   >
                     Export Settings
                   </button>

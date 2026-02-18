@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~27.5 hours (Days 1–24) |
+| Total time | ~28.5 hours (Days 1–25) |
 | Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 14 (3 vault + 7 Artemis + 1 knowledge + 2 research + 1 skills) |
@@ -21,11 +21,32 @@
 | Type checking | pyright (3 sub-projects) + TypeScript (frontend) — 0 errors across all |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 16.3k char system prompt (synced) |
-| Current state | PRD fully updated to reflect actual architecture (971 lines, +289/-143) |
+| Current state | Appearance settings functional — theme, accent color, font size all apply live |
 
 ---
 
 ## The Journey
+
+### Day 25: Appearance Settings Actually Work (Feb 18) — ~1 hour
+
+Settings for theme (dark/light), accent color (indigo/cyan/orange/gold), and font size (small/medium/large) were being saved to localStorage but never applied to the DOM. The `useSettings` hook only lived on the Settings page — no other component consumed the values.
+
+**Root Cause:** No bridge between localStorage persistence and CSS. The Tailwind config used hardcoded hex colors, so there was no mechanism for runtime theme switching.
+
+**Fix — CSS custom properties + settings applier (10 files modified, 1 new file):**
+
+- **`index.css`** — Added CSS custom properties for all 6 theme-dependent colors (`--luxury-obsidian-rgb`, `--luxury-charcoal-rgb`, `--luxury-card`, `--luxury-text-primary-rgb`, `--luxury-text-secondary-rgb`, `--luxury-border`). Added `[data-theme="light"]` overrides that swap backgrounds to light slate, text to dark navy, borders to dark-tinted. Added `[data-accent="cyan|orange|gold"]` overrides for `--luxury-accent-rgb`. Added `html[data-font-size="small|large"]` font-size scaling (14px/18px).
+- **`tailwind.config.js`** — Changed 6 theme-dependent luxury colors from hardcoded hex to `rgb(var(--x) / <alpha-value>)` so Tailwind opacity modifiers (e.g., `bg-luxury-obsidian/90`) still work. Added `luxury-accent` color. Kept quadrant colors (`indigo`, `cyan`, `orange`, `slate`, `gold`) hardcoded — they're semantic, not user-configurable.
+- **`hooks/useApplySettings.ts`** (new) — Effect that reads `artemis-settings` from localStorage and sets `data-theme`, `data-accent`, `data-font-size` attributes on `<html>`. Listens for `StorageEvent` (cross-tab) and custom `artemis-settings-change` event (same-tab instant updates).
+- **`App.tsx`** — Calls `useApplySettings()` at the top level so settings apply on every page load.
+- **`hooks/useSettings.ts`** — Dispatches `artemis-settings-change` custom event after every `localStorage.setItem`, so changes apply instantly without page reload.
+- **6 component files** — Swapped `luxury-indigo` → `luxury-accent` for UI accent usages (focus rings, buttons, FAB gradient), keeping `luxury-indigo` for Q1 quadrant semantics: `Input`, `Select`, `Settings`, `AppShell`, `TaskCreationModal`, `LuxuryTaskSelector`.
+
+**Design Decision:** Used `rgb(var() / <alpha-value>)` pattern (Tailwind v3 standard) instead of raw CSS variable colors. This preserves opacity modifier support — critical since 30+ existing usages like `bg-luxury-obsidian/90` and `bg-luxury-indigo/20` depend on it.
+
+**Verification:** TypeScript `tsc --noEmit` — 0 errors. Vite build — success (962KB JS, 57KB CSS).
+
+---
 
 ### Day 24: Pomodoro Polling Fix + PRD Overhaul (Feb 18) — ~1.5 hours
 
