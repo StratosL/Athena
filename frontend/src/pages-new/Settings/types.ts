@@ -23,7 +23,6 @@ export interface Settings {
   breakReminders: boolean
 
   // Data & Privacy
-  analyticsEnabled: boolean
   dataRetentionDays: number
 }
 

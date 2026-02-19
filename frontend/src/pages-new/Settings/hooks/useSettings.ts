@@ -28,7 +28,6 @@ const DEFAULT_SETTINGS: Settings = {
   breakReminders: true,
 
   // Data & Privacy
-  analyticsEnabled: true,
   dataRetentionDays: 90,
 }
 

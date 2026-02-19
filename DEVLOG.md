@@ -62,7 +62,12 @@ Refactored `ChatSidebar/index.tsx` to import from `./shared` — slimmed to ~170
 
 - `BottomNav` — Removed `slice(0, 5)`, now shows all items with `overflow-x-auto scrollbar-hide` for horizontal scroll
 - `index.css` — Added `.scrollbar-hide` utility (hides scrollbar, keeps scroll)
-- Athena FAB — Changed to `hidden lg:flex` (desktop-only) to avoid overlapping the dashboard's quick-actions "+" button on mobile
+- Athena FAB — Restored on mobile (`bottom-20 right-4`), dashboard "+" FAB moved to bottom-left to avoid overlap
+
+**Step 5 — Cleanup:**
+
+- Sidebar + BottomNav — Replaced `<a href>` with React Router `<Link to>` for client-side navigation (was causing full page reloads / "site can't be reached")
+- Removed fake "Analytics Tracking" toggle from Settings → Data & Privacy (no telemetry exists, toggle was cosmetic)
 
 **Verification:** `tsc --noEmit` — 0 errors. `vite build` — success. Browser tested on desktop (1280x720) and mobile (375x667).
 

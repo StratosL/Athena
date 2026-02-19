@@ -253,15 +253,6 @@ export function Settings() {
               description="Manage your data and privacy preferences"
             >
               <SettingRow>
-                <Toggle
-                  enabled={settings.analyticsEnabled}
-                  onChange={(value) => updateSetting("analyticsEnabled", value)}
-                  label="Analytics Tracking"
-                  description="Help improve Artemis by sharing anonymous usage data"
-                />
-              </SettingRow>
-
-              <SettingRow>
                 <Slider
                   value={settings.dataRetentionDays}
                   onChange={(value) => updateSetting("dataRetentionDays", value)}
