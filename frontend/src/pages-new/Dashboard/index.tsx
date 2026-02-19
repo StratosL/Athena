@@ -18,16 +18,17 @@ export function Dashboard() {
       title="Artemis"
       subtitle="Achieve sustainable, high-quality productivity"
     >
-      {/* 3-Column Hub */}
+      {/* 3-Column Hub — DOM order = mobile stack order (Plan → Timer → Matrix) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Column 1: Today's Plan */}
-        <DashboardPlanColumn />
-
-        {/* Column 2: Pomodoro Timer */}
-        <DashboardTimerColumn />
-
-        {/* Column 3: Eisenhower Matrix (compact) */}
-        <DashboardMatrixColumn />
+        <div className="lg:order-2">
+          <DashboardPlanColumn />
+        </div>
+        <div className="lg:order-3">
+          <DashboardTimerColumn />
+        </div>
+        <div className="lg:order-1">
+          <DashboardMatrixColumn />
+        </div>
       </div>
 
       {/* Bottom: Daily Stats Bar */}

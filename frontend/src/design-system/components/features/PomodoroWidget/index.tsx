@@ -32,7 +32,7 @@ const stateLabels = {
   LONG_BREAK: "Long Break",
 } as const
 
-export function PomodoroWidget({ className }: PomodoroWidgetProps) {
+export function PomodoroWidget({ className, compact }: PomodoroWidgetProps) {
   const {
     state,
     remainingSeconds,
@@ -121,6 +121,58 @@ export function PomodoroWidget({ className }: PomodoroWidgetProps) {
   const percentage = state === "IDLE" ? 0 : (elapsed / totalSeconds) * 100
   const isActive = state !== "IDLE"
   const isLoading = startSession.isPending || stopSession.isPending || completeSession.isPending
+
+  if (compact) {
+    return (
+      <GlassCard className={cn("p-4 flex flex-col items-center", className)} hoverable={false}>
+        <h3 className="font-playfair font-semibold text-luxury-text-primary text-sm mb-2">
+          Pomodoro Timer
+        </h3>
+
+        <p className={cn(
+          "text-xs mb-2",
+          state === "WORK" ? "text-luxury-indigo" :
+          state === "SHORT_BREAK" || state === "LONG_BREAK" ? "text-luxury-gold" :
+          "text-luxury-text-secondary"
+        )}>
+          {stateLabels[state]}
+        </p>
+
+        <p className="text-2xl font-bold font-inter text-luxury-text-primary mb-3">
+          {formatTime(displaySeconds)}
+        </p>
+
+        {/* Horizontal progress bar */}
+        <div className="w-full h-1.5 bg-white/5 rounded-full mb-3 overflow-hidden">
+          <div
+            className={cn(
+              "h-full rounded-full transition-all duration-500",
+              state === "WORK" ? "bg-luxury-indigo" : "bg-luxury-gold"
+            )}
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+
+        <div className="flex gap-3 mb-2">
+          {!isActive ? (
+            <Button variant="primary" size="sm" onClick={handleStart} loading={isLoading}>
+              Start Focus
+            </Button>
+          ) : (
+            <Button variant="danger" size="sm" onClick={handleStop} loading={isLoading}>
+              Stop
+            </Button>
+          )}
+        </div>
+
+        {pomodoroCount > 0 && (
+          <p className="text-xs text-luxury-text-secondary">
+            {pomodoroCount} session{pomodoroCount !== 1 ? "s" : ""} today
+          </p>
+        )}
+      </GlassCard>
+    )
+  }
 
   return (
     <GlassCard className={cn("p-6 flex flex-col items-center", className)} hoverable={false}>

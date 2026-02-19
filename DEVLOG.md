@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~29 hours (Days 1–26) |
+| Total time | ~29.5 hours (Days 1–27) |
 | Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 14 (3 vault + 7 Artemis + 1 knowledge + 2 research + 1 skills) |
@@ -21,11 +21,36 @@
 | Type checking | pyright (3 sub-projects) + TypeScript (frontend) — 0 errors across all |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 16.3k char system prompt (synced) |
-| Current state | Pomodoro settings connected end-to-end — work duration from Settings applied to timer |
+| Current state | Dashboard layout reordered — Plan promoted to hero center, Timer demoted to compact right column |
 
 ---
 
 ## The Journey
+
+### Day 27: Dashboard Layout — Plan Hero, Compact Timer (Feb 19) — ~20 min
+
+The dashboard's 3-column layout had the Pomodoro timer (180px circular ring) in the center — the most prominent position. But the timer is low-information-density (one number + one button) compared to the Plan (9 task slots) and Matrix (4 quadrant cards). Swapped the layout so the Daily Plan takes the hero center spot.
+
+**Changes (4 files modified, 0 new files):**
+
+- **`PomodoroWidget.types.ts`** — Added `compact?: boolean` prop to `PomodoroWidgetProps`
+- **`PomodoroWidget/index.tsx`** — Added compact rendering path: replaces the 180px `ProgressRing` with a horizontal progress bar (`h-1.5`, indigo for work / gold for breaks), reduces countdown to `text-2xl`, tightens padding to `p-4`, shrinks title to `text-sm`. All hook logic, state management, and WebSocket handling unchanged — only JSX conditionally branches.
+- **`DashboardTimerColumn.tsx`** — One-line change: `<PomodoroWidget compact />`
+- **`Dashboard/index.tsx`** — Reordered columns via CSS `order`: DOM order is Plan → Timer → Matrix (correct mobile stacking), desktop uses `lg:order-2` (Plan center), `lg:order-3` (Timer right), `lg:order-1` (Matrix left)
+
+**Layout:**
+
+| Position | Desktop (lg+) | Mobile |
+|----------|--------------|--------|
+| Left | Eisenhower Matrix | Plan (first) |
+| Center | Today's Plan (hero) | Timer (second) |
+| Right | Compact Timer | Matrix (third) |
+
+**Not Affected:** `/pomodoro` page (uses `LuxuryPomodoroTimer` with 360px ring), `DailyStatsBar`, mobile FAB, all timer functionality.
+
+**Verification:** TypeScript `tsc --noEmit` — 0 errors.
+
+---
 
 ### Day 26: Pomodoro Settings Actually Work (Feb 19) — ~30 min
 
@@ -959,4 +984,4 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 
 ---
 
-*Last updated: February 16, 2026 (Day 22)*
+*Last updated: February 19, 2026 (Day 27)*
