@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~30 hours (Days 1–28) |
+| Total time | ~30.5 hours (Days 1–29) |
 | Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 14 (3 vault + 7 Artemis + 1 knowledge + 2 research + 1 skills) |
@@ -26,6 +26,23 @@
 ---
 
 ## The Journey
+
+### Day 29: Fix Daily Plan Task Assignment (Feb 19) — ~15 min
+
+Clicking a task in the Daily Plan selector did nothing — task didn't appear in the slot. No error shown.
+
+**Root Cause:** `find_plan_with_task()` in `DailyPlanService.assign_task()` searched ALL plans across ALL dates. If a task was assigned to yesterday's plan, the backend returned 409 `TaskAlreadyAssignedError`. The frontend mutation had no `onError` handler, so the modal closed silently with no feedback.
+
+**Fix (1 file, 1 line changed):**
+
+- **`services/artemis-backend/app/features/daily_plan/service.py`** — Changed the `find_plan_with_task` guard from blocking on ANY plan to only blocking when the task is already in the SAME plan (different slot). Tasks in previous days' plans are now freely assignable to today's plan.
+
+**Before:** `if existing_plan:` — rejects if task is in any plan ever
+**After:** `if existing_plan and existing_plan["id"] == plan_id:` — only rejects if task is already in this specific plan
+
+**Verification:** pyright — 0 errors.
+
+---
 
 ### Day 28: Dashboard Redesign — 2-Column Layout, Timer in Stats Bar (Feb 19) — ~30 min
 
@@ -1017,4 +1034,4 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 
 ---
 
-*Last updated: February 19, 2026 (Day 28)*
+*Last updated: February 19, 2026 (Day 29)*

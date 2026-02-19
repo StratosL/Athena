@@ -178,9 +178,9 @@ class DailyPlanService:
             except TaskNotFoundError:
                 raise InvalidTaskError(assignment.task_id) from None
 
-            # Check if task is already in another plan
+            # Check if task is already in THIS plan (different slot)
             existing_plan = self.repository.find_plan_with_task(assignment.task_id)
-            if existing_plan:
+            if existing_plan and existing_plan["id"] == plan_id:
                 raise TaskAlreadyAssignedError(assignment.task_id, str(existing_plan["date"]))
 
             # Check slot capacity
