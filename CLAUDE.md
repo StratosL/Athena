@@ -67,6 +67,13 @@ The agent NEVER creates tasks, modifies notes, or takes destructive actions with
 - Docstrings on all public classes and functions
 - Error handling: return error messages, never crash. MCP tools must handle unreachable services gracefully.
 
+## Git Rules
+
+- **NEVER add `Co-Authored-By` trailers** to commit messages. Stratos is the sole author.
+- Use conventional commits: `type(scope): description`
+- Never force push unless explicitly asked.
+- Never commit secrets, credentials, `.env` files, or API keys.
+
 ## Implementation Priority
 
 | Priority | What | Why |
