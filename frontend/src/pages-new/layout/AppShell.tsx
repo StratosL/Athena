@@ -5,7 +5,7 @@ import { PageHeader, Sidebar, BottomNav, ChatSidebar } from "@/design-system/com
 import type { PageHeaderProps } from "@/design-system/components"
 import { useChatStore } from "@/stores/chatStore"
 import { cn } from "@/lib/utils"
-import { navItems, bottomNavItems } from "./navItems"
+import { navItems, bottomNavItems, primaryNavItems, overflowNavItems } from "./navItems"
 
 interface AppShellProps {
   title: string
@@ -31,13 +31,23 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
     active: location.pathname === item.href,
   }))
 
+  const primaryWithActive = primaryNavItems.map((item) => ({
+    ...item,
+    active: location.pathname === item.href,
+  }))
+
+  const overflowWithActive = overflowNavItems.map((item) => ({
+    ...item,
+    active: location.pathname === item.href,
+  }))
+
   return (
     <div className="min-h-screen bg-luxury-obsidian">
       {/* Desktop Sidebar */}
       <Sidebar items={itemsWithActive} bottomItems={bottomItemsWithActive} className="hidden lg:flex fixed left-0 top-0 z-40" />
 
       {/* Mobile Bottom Nav */}
-      <BottomNav items={itemsWithActive} />
+      <BottomNav items={primaryWithActive} overflowItems={overflowWithActive} />
 
       <div
         className={cn(

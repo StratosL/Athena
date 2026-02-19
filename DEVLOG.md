@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~31.5 hours (Days 1–30) |
+| Total time | ~32 hours (Days 1–31) |
 | Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 14 (3 vault + 7 Artemis + 1 knowledge + 2 research + 1 skills) |
@@ -21,11 +21,30 @@
 | Type checking | pyright (3 sub-projects) + TypeScript (frontend) — 0 errors across all |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 16.3k char system prompt (synced) |
-| Current state | Dedicated /athena chat page with 2-panel layout, scrollable mobile bottom nav |
+| Current state | Mobile "More" bottom sheet for overflow nav, dedicated /athena chat page |
 
 ---
 
 ## The Journey
+
+### Day 31: Mobile "More" Bottom Sheet (Feb 19) — ~30 min
+
+Replaced the 6-item horizontally scrollable mobile bottom nav with 5 direct tabs + a "More" button that opens an animated bottom sheet containing overflow items. Guide and Settings pages were previously unreachable on mobile because they only rendered in the desktop sidebar's `bottomItems`.
+
+**Tab layout:**
+- Direct tabs: Dashboard, Tasks, Daily Plan, Athena, More
+- More sheet: Pomodoro, Analytics, Guide, Settings
+
+**Changes (4 files modified, 0 new files):**
+
+- **`navItems.ts`** — Added `primaryNavItems` (4 direct tabs) and `overflowNavItems` (4 overflow items). Existing `navItems`/`bottomNavItems` preserved for desktop sidebar.
+- **`BottomNav.types.ts`** — Added `overflowItems?: SidebarNavItem[]` prop.
+- **`BottomNav/index.tsx`** — Added `isMoreOpen` state, "More" button styled identically to nav items, animated bottom sheet with `AnimatePresence` + `motion.div` (spring transition, backdrop blur, glassmorphism). Sheet positioned above the nav bar. "More" button highlights gold when any overflow item is active. Removed `overflow-x-auto` since 5 items fit without scrolling.
+- **`AppShell.tsx`** — Builds `primaryWithActive` and `overflowWithActive` arrays with active-state logic, passes both to `<BottomNav>`. Desktop sidebar unchanged.
+
+**Verification:** `tsc --noEmit` — 0 errors. `vite build` — success. Browser tested with `agent-browser` on mobile (375x667) and desktop (1280x800) — all 6 test scenarios pass.
+
+---
 
 ### Day 30: Dedicated Athena Chat Page (Feb 19) — ~1 hour
 
@@ -1080,4 +1099,4 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 
 ---
 
-*Last updated: February 19, 2026 (Day 29)*
+*Last updated: February 19, 2026 (Day 31)*
