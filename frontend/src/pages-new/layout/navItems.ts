@@ -4,6 +4,7 @@ import {
   Calendar,
   Timer,
   BarChart3,
+  Sparkles,
   BookOpen,
   Settings,
 } from "lucide-react"
@@ -16,6 +17,7 @@ export const navItems: SidebarNavItem[] = [
   { label: "Daily Plan", href: "/daily-plan", icon: createElement(Calendar, { className: "w-5 h-5" }) },
   { label: "Pomodoro", href: "/pomodoro", icon: createElement(Timer, { className: "w-5 h-5" }) },
   { label: "Analytics", href: "/analytics", icon: createElement(BarChart3, { className: "w-5 h-5" }) },
+  { label: "Athena", href: "/athena", icon: createElement(Sparkles, { className: "w-5 h-5" }) },
 ]
 
 export const bottomNavItems: SidebarNavItem[] = [

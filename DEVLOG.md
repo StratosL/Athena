@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~30.5 hours (Days 1–29) |
+| Total time | ~31.5 hours (Days 1–30) |
 | Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 14 (3 vault + 7 Artemis + 1 knowledge + 2 research + 1 skills) |
@@ -21,11 +21,52 @@
 | Type checking | pyright (3 sub-projects) + TypeScript (frontend) — 0 errors across all |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 16.3k char system prompt (synced) |
-| Current state | Dashboard 2-column layout — Plan + Matrix as equal heroes, Pomodoro timer merged into stats bar |
+| Current state | Dedicated /athena chat page with 2-panel layout, scrollable mobile bottom nav |
 
 ---
 
 ## The Journey
+
+### Day 30: Dedicated Athena Chat Page (Feb 19) — ~1 hour
+
+Added a full-page `/athena` route with 2-panel layout (conversation history + chat), replacing the cramped 420px sidebar for deeper conversations. Both the page and sidebar share the same Zustand store — state stays in sync.
+
+**Step 1 — Extract shared components from ChatSidebar:**
+
+Broke the 653-line `ChatSidebar/index.tsx` into 6 reusable shared modules under `ChatSidebar/shared/`:
+
+| File | Purpose |
+|------|---------|
+| `renderMarkdown.ts` | Pure function: `marked` + DOMPurify |
+| `StatusIndicator.tsx` | Recording/thinking/speaking status bubbles |
+| `VoiceSettingsDialog.tsx` | Radix dialog for voice/auto-speak settings |
+| `ConversationList.tsx` | History list with `showCloseButton` prop |
+| `MessageList.tsx` | Messages, welcome screen, auto-scroll, hints |
+| `ChatInput.tsx` | Text input + voice mic button with `autoFocus` prop |
+
+Refactored `ChatSidebar/index.tsx` to import from `./shared` — slimmed to ~170 lines. Same public API.
+
+**Step 2 — Athena page (`pages-new/Athena/`):**
+
+- `index.tsx` — 2-panel layout: `ConversationPanel` (left, desktop-only `w-72`) + chat area (right, `flex-1`)
+- `components/ChatHeader.tsx` — Avatar with status dot, voice toggle, new chat, settings
+- `components/ConversationPanel.tsx` — Wraps `ConversationList` with glassmorphism card
+
+**Step 3 — Routing + nav:**
+
+- `navItems.ts` — Added 6th item: Athena with `Sparkles` icon
+- `App.tsx` — Added `<Route path="/athena">` with lazy import
+- `AppShell.tsx` — Hides ChatSidebar + FAB on `/athena`, removes right padding
+
+**Step 4 — Mobile fixes:**
+
+- `BottomNav` — Removed `slice(0, 5)`, now shows all items with `overflow-x-auto scrollbar-hide` for horizontal scroll
+- `index.css` — Added `.scrollbar-hide` utility (hides scrollbar, keeps scroll)
+- Athena FAB — Changed to `hidden lg:flex` (desktop-only) to avoid overlapping the dashboard's quick-actions "+" button on mobile
+
+**Verification:** `tsc --noEmit` — 0 errors. `vite build` — success. Browser tested on desktop (1280x720) and mobile (375x667).
+
+---
 
 ### Day 29: Fix Daily Plan Task Assignment (Feb 19) — ~15 min
 

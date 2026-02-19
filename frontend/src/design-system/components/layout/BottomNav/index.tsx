@@ -11,13 +11,13 @@ export function BottomNav({ items, className }: BottomNavProps) {
         className
       )}
     >
-      <div className="flex items-center justify-around">
-        {items.slice(0, 5).map((item, index) => (
+      <div className="flex items-center overflow-x-auto scrollbar-hide">
+        {items.map((item, index) => (
           <a
             key={index}
             href={item.href}
             className={cn(
-              "flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg transition-all",
+              "flex flex-col items-center gap-1 min-w-[64px] flex-1 px-2 py-1.5 rounded-lg transition-all",
               item.active
                 ? "text-luxury-gold"
                 : "text-luxury-text-secondary hover:text-luxury-text-primary"

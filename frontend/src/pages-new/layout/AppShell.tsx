@@ -19,6 +19,7 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
   const isOpen = useChatStore((s) => s.isOpen)
   const toggle = useChatStore((s) => s.toggle)
   const setOpen = useChatStore((s) => s.setOpen)
+  const isAthenaPage = location.pathname === "/athena"
 
   const itemsWithActive = navItems.map((item) => ({
     ...item,
@@ -41,7 +42,7 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
       <div
         className={cn(
           "lg:pl-64 transition-[padding] duration-300",
-          isOpen && "lg:pr-[420px]"
+          isOpen && !isAthenaPage && "lg:pr-[420px]"
         )}
       >
         <PageHeader title={title} subtitle={subtitle} actions={actions} />
@@ -49,33 +50,36 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
         <main className="p-4 pb-20 lg:p-8 lg:pb-8">{children}</main>
       </div>
 
-      {/* Athena Chat Sidebar */}
-      <ChatSidebar open={isOpen} onClose={() => setOpen(false)} />
+      {/* Athena Chat Sidebar + FAB (hidden on /athena page) */}
+      {!isAthenaPage && (
+        <>
+          <ChatSidebar open={isOpen} onClose={() => setOpen(false)} />
 
-      {/* Floating Action Button */}
-      <AnimatePresence>
-        {!isOpen && (
-          <motion.button
-            onClick={toggle}
-            className={cn(
-              "fixed bottom-20 right-6 lg:bottom-8 z-30",
-              "w-14 h-14 rounded-full",
-              "bg-gradient-to-r from-luxury-accent to-luxury-gold",
-              "text-white shadow-lg shadow-luxury-accent/25",
-              "flex items-center justify-center"
+          <AnimatePresence>
+            {!isOpen && (
+              <motion.button
+                onClick={toggle}
+                className={cn(
+                  "fixed bottom-8 right-6 z-30 hidden lg:flex",
+                  "w-14 h-14 rounded-full",
+                  "bg-gradient-to-r from-luxury-accent to-luxury-gold",
+                  "text-white shadow-lg shadow-luxury-accent/25",
+                  "flex items-center justify-center"
+                )}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                aria-label="Open Athena chat"
+              >
+                <MessageCircle size={24} />
+              </motion.button>
             )}
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            aria-label="Open Athena chat"
-          >
-            <MessageCircle size={24} />
-          </motion.button>
-        )}
-      </AnimatePresence>
+          </AnimatePresence>
+        </>
+      )}
     </div>
   )
 }

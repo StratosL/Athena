@@ -9,6 +9,7 @@ import { Pomodoro } from "@/pages-new/Pomodoro"
 import { Onboarding } from "@/pages-new/Onboarding"
 import { DailyReflection } from "@/pages-new/DailyReflection"
 import { Guide } from "@/pages-new/Guide"
+import { Athena } from "@/pages-new/Athena"
 import { useApplySettings } from "@/hooks/useApplySettings"
 
 const queryClient = new QueryClient({
@@ -33,6 +34,7 @@ function App() {
           <Route path="/pomodoro" element={<Pomodoro />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/athena" element={<Athena />} />
           <Route path="/guide" element={<Guide />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/reflection" element={<DailyReflection />} />
