@@ -6,6 +6,7 @@
  */
 
 import * as React from "react"
+import { Link } from "react-router-dom"
 import { motion, AnimatePresence } from "motion/react"
 import { cn } from "@/lib/utils"
 import { glassmorphismClasses } from "@/design-system"
@@ -73,9 +74,9 @@ export const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
                 {/* Navigation Items */}
                 <div className="flex-1 space-y-2">
                     {items.map((item, index) => (
-                        <a
+                        <Link
                             key={index}
-                            href={item.href}
+                            to={item.href}
                             className={cn(
                                 "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-300",
                                 "hover:bg-luxury-card",
@@ -99,7 +100,7 @@ export const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
                                     </motion.span>
                                 )}
                             </AnimatePresence>
-                        </a>
+                        </Link>
                     ))}
                 </div>
 
@@ -107,9 +108,9 @@ export const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
                 {bottomItems && bottomItems.length > 0 && (
                     <div className="space-y-2 pt-4 border-t border-luxury-border">
                         {bottomItems.map((item, index) => (
-                            <a
+                            <Link
                                 key={index}
-                                href={item.href}
+                                to={item.href}
                                 className={cn(
                                     "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-300",
                                     "hover:bg-luxury-card",
@@ -133,7 +134,7 @@ export const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
                                         </motion.span>
                                     )}
                                 </AnimatePresence>
-                            </a>
+                            </Link>
                         ))}
                     </div>
                 )}

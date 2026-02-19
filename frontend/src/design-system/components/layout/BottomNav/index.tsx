@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import type { BottomNavProps } from "./BottomNav.types"
 
@@ -13,9 +14,9 @@ export function BottomNav({ items, className }: BottomNavProps) {
     >
       <div className="flex items-center overflow-x-auto scrollbar-hide">
         {items.map((item, index) => (
-          <a
+          <Link
             key={index}
-            href={item.href}
+            to={item.href}
             className={cn(
               "flex flex-col items-center gap-1 min-w-[64px] flex-1 px-2 py-1.5 rounded-lg transition-all",
               item.active
@@ -27,7 +28,7 @@ export function BottomNav({ items, className }: BottomNavProps) {
               {item.icon}
             </span>
             <span className="text-[10px] font-medium">{item.label}</span>
-          </a>
+          </Link>
         ))}
       </div>
     </nav>
