@@ -32,9 +32,9 @@ export function Dashboard() {
       </footer>
 
       {/* Mobile FAB for quick actions */}
-      <div className="fixed bottom-20 right-4 z-50 lg:hidden">
+      <div className="fixed bottom-20 left-4 z-50 lg:hidden">
         {fabOpen && (
-          <div className="mb-3 flex flex-col gap-2 items-end">
+          <div className="mb-3 flex flex-col gap-2 items-start">
             <button
               onClick={() => { setFabOpen(false); navigate("/tasks") }}
               className="flex items-center gap-2 px-4 py-2 rounded-full bg-luxury-card backdrop-blur-md border border-luxury-border text-luxury-text-primary text-sm shadow-lg"

@@ -60,7 +60,7 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
               <motion.button
                 onClick={toggle}
                 className={cn(
-                  "fixed bottom-8 right-6 z-30 hidden lg:flex",
+                  "fixed bottom-20 right-4 lg:bottom-8 lg:right-6 z-30",
                   "w-14 h-14 rounded-full",
                   "bg-gradient-to-r from-luxury-accent to-luxury-gold",
                   "text-white shadow-lg shadow-luxury-accent/25",
