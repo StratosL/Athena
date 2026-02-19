@@ -31,9 +31,15 @@ class PomodoroService:
         """Initialize service with database client."""
         self.repository = PomodoroRepository(db)
 
-    def start_session(self, task_id: str | None = None) -> PomodoroSessionResponse:
+    def start_session(
+        self, task_id: str | None = None, duration_minutes: int = 25
+    ) -> PomodoroSessionResponse:
         """Start a new pomodoro session."""
-        logger.info("pomodoro.session_start_requested", task_id=task_id)
+        logger.info(
+            "pomodoro.session_start_requested",
+            task_id=task_id,
+            duration_minutes=duration_minutes,
+        )
 
         try:
             # Check if there's already an active session
@@ -47,14 +53,16 @@ class PomodoroService:
                 raise SessionAlreadyActiveError()
 
             # Create new session
-            data = PomodoroSessionCreate(task_id=task_id, duration_minutes=25)
+            data = PomodoroSessionCreate(
+                task_id=task_id, duration_minutes=duration_minutes
+            )
             session = self.repository.create(data)
 
             logger.info(
                 "pomodoro.session_started",
                 session_id=session.id,
                 task_id=task_id,
-                duration_minutes=25,
+                duration_minutes=duration_minutes,
             )
             return session
 

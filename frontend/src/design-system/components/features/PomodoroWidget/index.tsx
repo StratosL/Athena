@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { cn } from "@/lib/utils"
 import { GlassCard } from "../../base/GlassCard"
 import { Button } from "../../base/Button"
@@ -8,7 +8,16 @@ import { useActiveTimer, useStartSession, useStopSession, useCompleteSession } f
 import { usePomodoroWebSocket } from "@/hooks/usePomodoroWebSocket"
 import type { PomodoroWidgetProps } from "./PomodoroWidget.types"
 
-const WORK_DURATION_SECONDS = 25 * 60
+function getPomodoroSettings() {
+  try {
+    const raw = localStorage.getItem("artemis-settings")
+    if (raw) {
+      const s = JSON.parse(raw)
+      return { workDuration: s.pomodoroWorkDuration ?? 25 }
+    }
+  } catch { /* ignore */ }
+  return { workDuration: 25 }
+}
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60)
@@ -33,6 +42,9 @@ export function PomodoroWidget({ className }: PomodoroWidgetProps) {
     setRemainingSeconds,
     setSession,
   } = useTimerStore()
+
+  const { workDuration } = useMemo(() => getPomodoroSettings(), [])
+  const workDurationSeconds = workDuration * 60
 
   const startSession = useStartSession()
   const stopSession = useStopSession()
@@ -78,7 +90,7 @@ export function PomodoroWidget({ className }: PomodoroWidgetProps) {
   }, [state, remainingSeconds, sessionId, completeSession, refetch])
 
   const handleStart = () => {
-    startSession.mutate(undefined, {
+    startSession.mutate({ durationMinutes: workDuration }, {
       onSuccess: (session) => {
         setSession(session.id, session.task_id)
         setState("WORK")
@@ -100,9 +112,13 @@ export function PomodoroWidget({ className }: PomodoroWidgetProps) {
     })
   }
 
-  const displaySeconds = state === "IDLE" ? WORK_DURATION_SECONDS : remainingSeconds
-  const elapsed = WORK_DURATION_SECONDS - displaySeconds
-  const percentage = state === "IDLE" ? 0 : (elapsed / WORK_DURATION_SECONDS) * 100
+  // Use the active session's duration for progress, fall back to settings for IDLE display
+  const totalSeconds = activeTimer?.session
+    ? activeTimer.session.duration_minutes * 60
+    : workDurationSeconds
+  const displaySeconds = state === "IDLE" ? workDurationSeconds : remainingSeconds
+  const elapsed = totalSeconds - displaySeconds
+  const percentage = state === "IDLE" ? 0 : (elapsed / totalSeconds) * 100
   const isActive = state !== "IDLE"
   const isLoading = startSession.isPending || stopSession.isPending || completeSession.isPending
 

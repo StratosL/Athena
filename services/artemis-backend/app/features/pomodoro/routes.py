@@ -56,7 +56,8 @@ def start_session(
     """Start a new pomodoro session."""
     try:
         task_id = data.task_id if data else None
-        return service.start_session(task_id)
+        duration_minutes = data.duration_minutes if data else 25
+        return service.start_session(task_id, duration_minutes=duration_minutes)
     except SessionAlreadyActiveError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message) from e
 

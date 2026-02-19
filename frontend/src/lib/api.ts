@@ -199,10 +199,13 @@ export const dailyPlansApi = {
 export const pomodoroApi = {
   getActive: () => fetchApi<ActiveTimer>("/pomodoro/active"),
 
-  start: (taskId?: string) =>
+  start: (taskId?: string, durationMinutes?: number) =>
     fetchApi<PomodoroSession>("/pomodoro/start", {
       method: "POST",
-      body: JSON.stringify({ task_id: taskId }),
+      body: JSON.stringify({
+        task_id: taskId,
+        ...(durationMinutes && { duration_minutes: durationMinutes }),
+      }),
     }),
 
   stop: () =>

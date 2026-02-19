@@ -23,7 +23,7 @@ export function Pomodoro() {
       if (state !== "IDLE") {
         stopMutation.mutate()
       } else {
-        startMutation.mutate(selectedTask?.id)
+        startMutation.mutate({ taskId: selectedTask?.id })
       }
     },
     onStopTimer: () => {
@@ -39,7 +39,7 @@ export function Pomodoro() {
   return (
     <AppShell
       title="Pomodoro Timer"
-      subtitle="25-minute focused work sessions with breaks"
+      subtitle="Focused work sessions with breaks"
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Timer - main column */}

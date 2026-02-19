@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~28.5 hours (Days 1–25) |
+| Total time | ~29 hours (Days 1–26) |
 | Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 14 (3 vault + 7 Artemis + 1 knowledge + 2 research + 1 skills) |
@@ -21,11 +21,33 @@
 | Type checking | pyright (3 sub-projects) + TypeScript (frontend) — 0 errors across all |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 16.3k char system prompt (synced) |
-| Current state | Appearance settings functional — theme, accent color, font size all apply live |
+| Current state | Pomodoro settings connected end-to-end — work duration from Settings applied to timer |
 
 ---
 
 ## The Journey
+
+### Day 26: Pomodoro Settings Actually Work (Feb 19) — ~30 min
+
+Pomodoro timer settings (work duration, break durations) were saved to localStorage but never consumed by any code. The work duration was hardcoded to 25 minutes at three independent layers: backend service, frontend API client, and frontend timer display.
+
+**Root Cause:** Same pattern as Day 25 (appearance settings) — `useSettings` hook writes to localStorage, but no code reads those values. The backend `start_session()` hardcoded `duration_minutes=25`, the frontend API client never sent `duration_minutes`, and both timer components used `const WORK_DURATION_SECONDS = 25 * 60`.
+
+**Fix — 3-layer wiring (7 files modified, 0 new files):**
+
+- **Backend `service.py`** — `start_session()` now accepts `duration_minutes` parameter instead of hardcoding 25
+- **Backend `routes.py`** — Extracts `duration_minutes` from request body and passes it to the service (schema already supported it)
+- **Frontend `api.ts`** — `pomodoroApi.start()` now accepts and sends `duration_minutes` in the POST body
+- **Frontend `usePomodoro.ts`** — `useStartSession` mutation takes `{ taskId?, durationMinutes? }` object instead of bare string
+- **`LuxuryPomodoroTimer.tsx`** — Reads `pomodoroWorkDuration` from localStorage via `getPomodoroSettings()`, sends it when starting a session, uses session's actual `duration_minutes` for progress ring calculation
+- **`PomodoroWidget/index.tsx`** — Same fix for the dashboard widget
+- **`Pomodoro/index.tsx`** — Updated keyboard shortcut caller to use new mutation signature; removed hardcoded "25-minute" from subtitle
+
+**Design Decision:** Progress ring uses the active session's `duration_minutes` (from server response) rather than current settings — handles the case where settings change mid-session or a session was started with a different duration.
+
+**Verification:** TypeScript `tsc --noEmit` — 0 errors. Ruff check — all passed.
+
+---
 
 ### Day 25: Appearance Settings Actually Work (Feb 18) — ~1 hour
 

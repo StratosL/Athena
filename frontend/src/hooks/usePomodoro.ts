@@ -45,7 +45,8 @@ export function useStartSession() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (taskId?: string) => pomodoroApi.start(taskId),
+    mutationFn: (params?: { taskId?: string; durationMinutes?: number }) =>
+      pomodoroApi.start(params?.taskId, params?.durationMinutes),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: pomodoroKeys.active() })
       queryClient.invalidateQueries({ queryKey: pomodoroKeys.sessions() })
