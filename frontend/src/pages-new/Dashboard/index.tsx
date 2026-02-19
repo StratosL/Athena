@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom"
 import { AppShell } from "../layout"
 import {
   DashboardPlanColumn,
-  DashboardTimerColumn,
   DashboardMatrixColumn,
   DashboardStatsBar,
 } from "./components"
@@ -18,17 +17,10 @@ export function Dashboard() {
       title="Artemis"
       subtitle="Achieve sustainable, high-quality productivity"
     >
-      {/* 3-Column Hub — DOM order = mobile stack order (Plan → Timer → Matrix) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:order-2">
-          <DashboardPlanColumn />
-        </div>
-        <div className="lg:order-3">
-          <DashboardTimerColumn />
-        </div>
-        <div className="lg:order-1">
-          <DashboardMatrixColumn />
-        </div>
+      {/* 2-Column Hub — Plan left, Matrix right; single-column on mobile */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <DashboardPlanColumn />
+        <DashboardMatrixColumn />
       </div>
 
       {/* Bottom: Daily Stats Bar */}
