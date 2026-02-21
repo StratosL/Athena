@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~32 hours (Days 1–31) |
+| Total time | ~32.5 hours (Days 1–32) |
 | Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 14 (3 vault + 7 Artemis + 1 knowledge + 2 research + 1 skills) |
@@ -21,11 +21,38 @@
 | Type checking | pyright (3 sub-projects) + TypeScript (frontend) — 0 errors across all |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 16.3k char system prompt (synced) |
-| Current state | Mobile "More" bottom sheet for overflow nav, dedicated /athena chat page |
+| Current state | Dashboard fills viewport height, version footer removed, cards expand to use full screen |
 
 ---
 
 ## The Journey
+
+### Day 32: Dashboard Full-Height Layout (Feb 21) — ~15 min
+
+On desktop, the dashboard had wasted vertical space below the Plan and Matrix cards, plus a "Artemis v 0.6.0" footer adding visual noise. Made the dashboard content fill the full viewport height so cards expand to use all available screen real estate.
+
+**Changes (2 files modified, 0 new files):**
+
+- **`AppShell.tsx`** — Added optional `fillHeight?: boolean` prop. When enabled, the content wrapper becomes `h-screen flex flex-col` and `<main>` becomes `flex-1 flex flex-col min-h-0` on desktop (`lg:` breakpoint). Mobile layout unaffected.
+- **`Dashboard/index.tsx`** — Enabled `fillHeight` on AppShell. The 2-column grid uses `flex-1 min-h-0` to expand vertically, with `overflow-auto` on each column for independent scrolling. Stats bar pinned to bottom with `flex-shrink-0`. Removed the "Artemis v 0.6.0" footer.
+
+**Layout (desktop):**
+
+```
+┌─────────────────────┬─────────────────────┐
+│                     │                     │
+│   Today's Plan      │   Eisenhower Matrix │
+│   (fills height)    │   (fills height)    │
+│                     │                     │
+├─────────────────────┴─────────────────────┤
+│  Focus  25:00  ████████░░░░  [Start]      │
+│  2 pom  │  1.2h  │  5 done  │  72%       │
+└───────────────────────────────────────────┘
+```
+
+**Verification:** `tsc --noEmit` — 0 errors.
+
+---
 
 ### Day 31: Mobile "More" Bottom Sheet (Feb 19) — ~30 min
 
@@ -1099,4 +1126,4 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 
 ---
 
-*Last updated: February 19, 2026 (Day 31)*
+*Last updated: February 21, 2026 (Day 32)*

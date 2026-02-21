@@ -12,9 +12,10 @@ interface AppShellProps {
   subtitle?: string
   actions?: PageHeaderProps["actions"]
   children: React.ReactNode
+  fillHeight?: boolean
 }
 
-export function AppShell({ title, subtitle, actions, children }: AppShellProps) {
+export function AppShell({ title, subtitle, actions, children, fillHeight }: AppShellProps) {
   const location = useLocation()
   const isOpen = useChatStore((s) => s.isOpen)
   const toggle = useChatStore((s) => s.toggle)
@@ -52,12 +53,16 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
       <div
         className={cn(
           "lg:pl-64 transition-[padding] duration-300",
-          isOpen && !isAthenaPage && "lg:pr-[420px]"
+          isOpen && !isAthenaPage && "lg:pr-[420px]",
+          fillHeight && "lg:h-screen lg:flex lg:flex-col"
         )}
       >
         <PageHeader title={title} subtitle={subtitle} actions={actions} />
 
-        <main className="p-4 pb-20 lg:p-8 lg:pb-8">{children}</main>
+        <main className={cn(
+          "p-4 pb-20 lg:p-8 lg:pb-8",
+          fillHeight && "lg:flex-1 lg:flex lg:flex-col lg:min-h-0 lg:pb-4"
+        )}>{children}</main>
       </div>
 
       {/* Athena Chat Sidebar + FAB (hidden on /athena page) */}

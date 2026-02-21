@@ -16,20 +16,18 @@ export function Dashboard() {
     <AppShell
       title="Artemis"
       subtitle="Achieve sustainable, high-quality productivity"
+      fillHeight
     >
       {/* 2-Column Hub — Plan left, Matrix right; single-column on mobile */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0 lg:[&>*]:min-h-0 lg:[&>*]:overflow-auto">
         <DashboardPlanColumn />
         <DashboardMatrixColumn />
       </div>
 
       {/* Bottom: Daily Stats Bar */}
-      <DashboardStatsBar />
-
-      {/* Footer */}
-      <footer className="mt-12 text-center text-luxury-text-secondary text-sm">
-        <p>Artemis v 0.6.0</p>
-      </footer>
+      <div className="flex-shrink-0 mt-4">
+        <DashboardStatsBar />
+      </div>
 
       {/* Mobile FAB for quick actions */}
       <div className="fixed bottom-20 left-4 z-50 lg:hidden">
