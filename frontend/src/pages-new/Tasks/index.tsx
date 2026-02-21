@@ -37,7 +37,9 @@ export function Tasks() {
   }, [completeTask])
 
   const handleDeleteTask = useCallback((id: string) => {
-    deleteTask.mutate(id)
+    if (window.confirm("Delete this task? This cannot be undone.")) {
+      deleteTask.mutate(id)
+    }
   }, [deleteTask])
 
   const tasks = data?.items ?? []

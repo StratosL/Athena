@@ -3,7 +3,7 @@
  * Proxied via Vite dev server: /athena/* → localhost:3001/api/*
  */
 
-const BASE_URL = "/athena"
+const BASE_URL = "/athena-api"
 
 export interface ChatRequest {
   input: string
@@ -22,8 +22,9 @@ export async function athenaChat(req: ChatRequest): Promise<ChatResponse> {
     body: JSON.stringify(req),
   })
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Unknown error" }))
-    throw new Error(err.error || `HTTP ${res.status}`)
+    const err = await res.json().catch(() => null)
+    const msg = err?.error || err?.message || err?.detail || `Something went wrong (HTTP ${res.status})`
+    throw new Error(msg)
   }
   const data = await res.json()
   // Kibana Agent Builder returns { response: { message: "..." }, conversation_id }
@@ -44,8 +45,9 @@ export async function athenaTranscribe(blob: Blob): Promise<string> {
     body: form,
   })
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Unknown error" }))
-    throw new Error(err.error || `HTTP ${res.status}`)
+    const err = await res.json().catch(() => null)
+    const msg = err?.error || err?.message || err?.detail || `Something went wrong (HTTP ${res.status})`
+    throw new Error(msg)
   }
   const data = await res.json()
   return data.text
@@ -61,8 +63,9 @@ export async function athenaSpeak(
     body: JSON.stringify({ text, voice }),
   })
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Unknown error" }))
-    throw new Error(err.error || `HTTP ${res.status}`)
+    const err = await res.json().catch(() => null)
+    const msg = err?.error || err?.message || err?.detail || `Something went wrong (HTTP ${res.status})`
+    throw new Error(msg)
   }
   return res.blob()
 }

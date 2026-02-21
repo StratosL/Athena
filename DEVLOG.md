@@ -21,11 +21,29 @@
 | Type checking | pyright (3 sub-projects) + TypeScript (frontend) — 0 errors across all |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 16.3k char system prompt (synced) |
-| Current state | Tasks, Daily Plan, and Pomodoro pages fill viewport with enlarged fonts matching Dashboard |
+| Current state | E2E bug fixes: proxy conflict, stats mismatch, error handling, delete confirmation, mobile layout |
 
 ---
 
 ## The Journey
+
+### Day 35: E2E Bug Sweep — 6 Fixes (Feb 21) — ~1 hour
+
+Ran comprehensive E2E browser tests (desktop 1280x800 + mobile 375x667) across all pages. Fixed the checkbox cache invalidation bug, then addressed 5 critical/medium issues found during testing.
+
+**Bug fixes (7 files modified):**
+
+- **`useTasks.ts`** — `useCompleteTask` now invalidates `dailyPlanKeys.all` so completing a task updates both Dashboard and Daily Plan without refresh.
+- **`vite.config.ts` + `nginx.conf` + `athena-api.ts`** — Renamed API proxy from `/athena` to `/athena-api` to fix direct URL navigation to `/athena` page (was being proxied to backend instead of serving SPA).
+- **`athena-api.ts`** — Improved error parsing: extracts `error`, `message`, or `detail` from response body instead of showing raw JSON to user.
+- **`useAthenaChat.ts`** — Friendlier error message format when Athena API fails.
+- **`Tasks/index.tsx`** — Added `window.confirm()` before task deletion.
+- **`LuxuryQuickTaskInput.tsx`** — Stacked input vertically on mobile (`flex-col sm:flex-row`) so the text input gets full width instead of being squeezed to 88px.
+- **`analytics/repository.py`** — `get_tasks_in_range` now includes tasks completed in the date range (not just created), fixing "0 Tasks Done" when tasks were created on previous days.
+
+**Verification:** `tsc --noEmit` — 0 errors. All 4 browser regression tests passed.
+
+---
 
 ### Day 34: Full-Height + Font Bump for Tasks, Daily Plan, Pomodoro (Feb 21) — ~30 min
 

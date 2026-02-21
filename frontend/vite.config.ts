@@ -18,10 +18,10 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: true,
       proxy: {
-        "/athena": {
+        "/athena-api": {
           target: "http://localhost:3001",
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/athena/, "/api"),
+          rewrite: (path) => path.replace(/^\/athena-api/, "/api"),
         },
       },
     },

@@ -89,11 +89,12 @@ class AnalyticsRepository:
         start_date: date,
         end_date: date,
     ) -> list[dict[str, Any]]:
-        """Get tasks created within date range."""
+        """Get tasks created or completed within date range."""
         start_dt = datetime.combine(start_date, datetime.min.time(), tzinfo=UTC)
         end_dt = datetime.combine(end_date + timedelta(days=1), datetime.min.time(), tzinfo=UTC)
 
-        result = (
+        # Tasks created in range
+        created = (
             self.db.table("tasks")
             .select("id, quadrant, status, created_at, completed_at")
             .gte("created_at", start_dt.isoformat())
@@ -101,7 +102,25 @@ class AnalyticsRepository:
             .execute()
         )
 
-        return cast(list[dict[str, Any]], result.data or [])
+        # Tasks completed in range (but created earlier)
+        completed = (
+            self.db.table("tasks")
+            .select("id, quadrant, status, created_at, completed_at")
+            .gte("completed_at", start_dt.isoformat())
+            .lt("completed_at", end_dt.isoformat())
+            .lt("created_at", start_dt.isoformat())
+            .execute()
+        )
+
+        # Merge and deduplicate
+        seen = set()
+        merged: list[dict[str, Any]] = []
+        for task in [*(created.data or []), *(completed.data or [])]:
+            if task["id"] not in seen:
+                seen.add(task["id"])
+                merged.append(task)
+
+        return merged
 
     def get_daily_plans_in_range(
         self,

@@ -50,7 +50,7 @@ export function useAthenaChat() {
       } catch (err) {
         const msg =
           err instanceof Error ? err.message : "Failed to reach Athena"
-        addMessage("agent", `Error: ${msg}`)
+        addMessage("agent", `Sorry, I couldn't process that. ${msg}`)
         setStatus("idle")
         return null
       }

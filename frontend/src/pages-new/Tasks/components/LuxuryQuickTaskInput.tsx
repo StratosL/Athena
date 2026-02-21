@@ -35,7 +35,7 @@ export function LuxuryQuickTaskInput({
   }
 
   return (
-    <div className={cn("flex gap-2", className)}>
+    <div className={cn("flex flex-col sm:flex-row gap-2", className)}>
       <Input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -43,24 +43,26 @@ export function LuxuryQuickTaskInput({
         placeholder={placeholder}
         className="flex-1"
       />
-      <select
-        value={quadrant}
-        onChange={(e) => setQuadrant(Number(e.target.value) as 1 | 2 | 3 | 4)}
-        className={cn(
-          glassmorphismClasses,
-          "px-3 py-2 text-luxury-text-primary text-sm",
-          "focus:outline-none focus:ring-2 focus:ring-luxury-indigo"
-        )}
-      >
-        <option value={1}>Q1: Do First</option>
-        <option value={2}>Q2: Schedule</option>
-        <option value={3}>Q3: Delegate</option>
-        <option value={4}>Q4: Eliminate</option>
-      </select>
-      <Button variant="primary" size="md" onClick={handleSubmit} disabled={!title.trim()}>
-        <Plus className="w-4 h-4 mr-1" />
-        Add
-      </Button>
+      <div className="flex gap-2">
+        <select
+          value={quadrant}
+          onChange={(e) => setQuadrant(Number(e.target.value) as 1 | 2 | 3 | 4)}
+          className={cn(
+            glassmorphismClasses,
+            "px-3 py-2 text-luxury-text-primary text-sm flex-1 sm:flex-initial",
+            "focus:outline-none focus:ring-2 focus:ring-luxury-indigo"
+          )}
+        >
+          <option value={1}>Q1: Do First</option>
+          <option value={2}>Q2: Schedule</option>
+          <option value={3}>Q3: Delegate</option>
+          <option value={4}>Q4: Eliminate</option>
+        </select>
+        <Button variant="primary" size="md" onClick={handleSubmit} disabled={!title.trim()}>
+          <Plus className="w-4 h-4 mr-1" />
+          Add
+        </Button>
+      </div>
     </div>
   )
 }

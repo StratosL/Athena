@@ -4,6 +4,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { tasksApi, type CreateTaskData, type Task, type UpdateTaskData } from "@/lib/api"
+import { dailyPlanKeys } from "@/hooks/useDailyPlan"
 
 // Query keys
 export const taskKeys = {
@@ -74,6 +75,7 @@ export function useCompleteTask() {
     mutationFn: (id: string) => tasksApi.complete(id),
     onSuccess: (updatedTask: Task) => {
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: dailyPlanKeys.all })
       queryClient.setQueryData(taskKeys.detail(updatedTask.id), updatedTask)
     },
   })
