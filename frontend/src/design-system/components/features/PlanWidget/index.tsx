@@ -18,36 +18,36 @@ function SlotItem({
 
   if (!task) {
     return (
-      <div className="flex items-center gap-2 px-2 py-1.5 rounded-md border border-dashed border-luxury-border/50">
-        <span className={cn("w-2 h-2 rounded-full opacity-30", dotColor)} />
-        <span className="text-xs text-luxury-text-secondary/50">{label}</span>
+      <div className="flex items-center gap-3 px-3 py-2.5 rounded-md border border-dashed border-luxury-border/50">
+        <span className={cn("w-2.5 h-2.5 rounded-full opacity-30", dotColor)} />
+        <span className="text-sm text-luxury-text-secondary/50">{label}</span>
       </div>
     )
   }
 
   return (
     <div className={cn(
-      "flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors",
+      "flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors",
       "hover:bg-white/5",
       isCompleted && "opacity-50"
     )}>
       <button
         onClick={() => onComplete?.(task.id)}
         className={cn(
-          "w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-colors",
+          "w-5 h-5 rounded border flex-shrink-0 flex items-center justify-center transition-colors",
           isCompleted
             ? "bg-luxury-gold border-luxury-gold"
             : "border-luxury-border hover:border-luxury-gold"
         )}
       >
         {isCompleted && (
-          <svg className="w-3 h-3 text-luxury-obsidian" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5 text-luxury-obsidian" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
           </svg>
         )}
       </button>
       <span className={cn(
-        "text-sm text-luxury-text-primary truncate",
+        "text-base text-luxury-text-primary truncate",
         isCompleted && "line-through text-luxury-text-secondary"
       )}>
         {task.title}
@@ -71,12 +71,12 @@ export function PlanWidget({ plan, isLoading, onCompleteTask, className }: PlanW
 
   return (
     <GlassCard className={cn("p-6", className)} hoverable={false}>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-playfair font-semibold text-luxury-text-primary">
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="font-playfair font-semibold text-lg text-luxury-text-primary">
           Today's Plan
         </h3>
         <span className={cn(
-          "text-xs font-medium px-2 py-0.5 rounded-full",
+          "text-sm font-medium px-2.5 py-0.5 rounded-full",
           completionRate >= 100
             ? "bg-green-500/20 text-green-400"
             : "bg-luxury-gold/20 text-luxury-gold"
@@ -86,7 +86,7 @@ export function PlanWidget({ plan, isLoading, onCompleteTask, className }: PlanW
       </div>
 
       {/* Progress bar */}
-      <div className="h-1.5 bg-white/5 rounded-full mb-4 overflow-hidden">
+      <div className="h-2 bg-white/5 rounded-full mb-5 overflow-hidden">
         <div
           className={cn(
             "h-full rounded-full transition-all duration-500",
@@ -96,10 +96,10 @@ export function PlanWidget({ plan, isLoading, onCompleteTask, className }: PlanW
         />
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {/* Major */}
         <div>
-          <p className="text-xs font-medium text-luxury-indigo mb-1">Major (1)</p>
+          <p className="text-sm font-medium text-luxury-indigo mb-1.5">Major (1)</p>
           <SlotItem
             task={plan?.major_task}
             label="Major Task"
@@ -110,7 +110,7 @@ export function PlanWidget({ plan, isLoading, onCompleteTask, className }: PlanW
 
         {/* Medium */}
         <div>
-          <p className="text-xs font-medium text-luxury-cyan mb-1">Medium (3)</p>
+          <p className="text-sm font-medium text-luxury-cyan mb-1.5">Medium (3)</p>
           <div className="space-y-1">
             {mediumSlots.map((task, i) => (
               <SlotItem
@@ -126,7 +126,7 @@ export function PlanWidget({ plan, isLoading, onCompleteTask, className }: PlanW
 
         {/* Small */}
         <div>
-          <p className="text-xs font-medium text-luxury-orange mb-1">Small (5)</p>
+          <p className="text-sm font-medium text-luxury-orange mb-1.5">Small (5)</p>
           <div className="space-y-1">
             {smallSlots.map((task, i) => (
               <SlotItem

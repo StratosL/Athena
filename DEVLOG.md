@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~32.5 hours (Days 1–32) |
+| Total time | ~32.5 hours (Days 1–33) |
 | Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 14 (3 vault + 7 Artemis + 1 knowledge + 2 research + 1 skills) |
@@ -21,11 +21,25 @@
 | Type checking | pyright (3 sub-projects) + TypeScript (frontend) — 0 errors across all |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 16.3k char system prompt (synced) |
-| Current state | Dashboard fills viewport height, version footer removed, cards expand to use full screen |
+| Current state | Dashboard cards fill viewport with readable font sizes across Plan, Matrix, and Stats |
 
 ---
 
 ## The Journey
+
+### Day 33: Dashboard Font Size Bump (Feb 21) — ~15 min
+
+Dashboard card content was too small to read comfortably on desktop, especially with the cards now filling the full viewport. Bumped font sizes, checkbox sizes, and padding across all three dashboard sections (PlanWidget, QuadrantGrid compact mode, DashboardStatsBar).
+
+**Changes (3 files modified, 0 new files):**
+
+- **`PlanWidget/index.tsx`** — Task titles `text-sm` → `text-base`, section labels (Major/Medium/Small) `text-xs` → `text-sm`, card title added `text-lg`, checkboxes `w-4` → `w-5`, row padding `py-1.5` → `py-2.5`, progress bar `h-1.5` → `h-2`.
+- **`QuadrantGrid/index.tsx`** — Compact headers `text-sm` → `text-base`, task titles `text-sm` → `text-base`, badge `text-[10px]` → `text-xs`, checkboxes `w-4` → `w-5`, removed `max-h-[120px]` cap so content fills available height.
+- **`DashboardStatsBar.tsx`** — Stat labels `text-xs` → `text-sm`, timer state label `text-sm` → `text-base`, countdown `text-xl` → `text-2xl`.
+
+**Verification:** `tsc --noEmit` — 0 errors.
+
+---
 
 ### Day 32: Dashboard Full-Height Layout (Feb 21) — ~15 min
 
@@ -1126,4 +1140,4 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 
 ---
 
-*Last updated: February 21, 2026 (Day 32)*
+*Last updated: February 21, 2026 (Day 33)*

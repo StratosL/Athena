@@ -47,7 +47,7 @@ function StatItem({
         {value}
         {unit && <span className="text-sm font-normal ml-0.5">{unit}</span>}
       </p>
-      <p className="text-xs text-luxury-text-secondary">{label}</p>
+      <p className="text-sm text-luxury-text-secondary">{label}</p>
     </div>
   )
 }
@@ -148,7 +148,7 @@ export function DashboardStatsBar() {
       {/* Timer row */}
       <div className="flex items-center gap-4">
         <p className={cn(
-          "text-sm font-medium min-w-[5rem]",
+          "text-base font-medium min-w-[5rem]",
           state === "WORK" ? "text-luxury-indigo" :
           state === "SHORT_BREAK" || state === "LONG_BREAK" ? "text-luxury-gold" :
           "text-luxury-text-secondary"
@@ -156,7 +156,7 @@ export function DashboardStatsBar() {
           {stateLabels[state]}
         </p>
 
-        <p className="text-xl font-bold font-inter text-luxury-text-primary tabular-nums">
+        <p className="text-2xl font-bold font-inter text-luxury-text-primary tabular-nums">
           {formatTime(displaySeconds)}
         </p>
 

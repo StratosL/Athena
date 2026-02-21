@@ -56,7 +56,7 @@ function CompactTaskItem({
   return (
     <div
       className={cn(
-        "flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors",
+        "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
         "hover:bg-white/5",
         isCompleted && "opacity-50"
       )}
@@ -64,21 +64,21 @@ function CompactTaskItem({
       <button
         onClick={() => onComplete?.(task.id)}
         className={cn(
-          "w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-colors",
+          "w-5 h-5 rounded border flex-shrink-0 flex items-center justify-center transition-colors",
           isCompleted
             ? "bg-luxury-gold border-luxury-gold"
             : `border-luxury-border hover:border-luxury-gold`
         )}
       >
         {isCompleted && (
-          <svg className="w-3 h-3 text-luxury-obsidian" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5 text-luxury-obsidian" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
           </svg>
         )}
       </button>
       <span
         className={cn(
-          "text-sm text-luxury-text-primary truncate",
+          "text-base text-luxury-text-primary truncate",
           isCompleted && "line-through text-luxury-text-secondary"
         )}
       >
@@ -187,32 +187,32 @@ function QuadrantSection({
   return (
     <GlassCard
       className={cn(
-        "p-4",
+        compact ? "p-4" : "p-4",
         compact ? "min-h-[160px]" : "min-h-[260px]",
         config.glow
       )}
       hoverable={false}
     >
-      <div className={cn("mb-3 flex items-center gap-2", compact && "mb-2")}>
-        <span className={cn("w-2 h-2 rounded-full", config.dotColor)} />
-        <h3 className={cn("font-playfair font-semibold", config.headerColor, compact ? "text-sm" : "text-base")}>
+      <div className={cn("mb-3 flex items-center gap-2")}>
+        <span className={cn("w-2.5 h-2.5 rounded-full", config.dotColor)} />
+        <h3 className={cn("font-playfair font-semibold", config.headerColor, compact ? "text-base" : "text-base")}>
           {config.title}
         </h3>
         {!compact && (
-          <span className="text-xs text-luxury-text-secondary ml-auto">
+          <span className="text-sm text-luxury-text-secondary ml-auto">
             {config.subtitle}
           </span>
         )}
-        <Badge variant={config.variant} className="ml-auto text-[10px] px-1.5 py-0">
+        <Badge variant={config.variant} className="ml-auto text-xs px-2 py-0.5">
           {quadrantTasks.length}
         </Badge>
       </div>
 
-      <div className={cn("space-y-1", compact ? "max-h-[120px] overflow-y-auto" : "space-y-2")}>
+      <div className={cn("space-y-1", compact ? "overflow-y-auto" : "space-y-2")}>
         {quadrantTasks.length === 0 ? (
           <p className={cn(
             "text-luxury-text-secondary text-center",
-            compact ? "text-xs py-4" : "text-sm py-8"
+            compact ? "text-sm py-4" : "text-sm py-8"
           )}>
             No tasks
           </p>
@@ -238,7 +238,7 @@ function QuadrantSection({
           ))
         )}
         {compact && quadrantTasks.length > 5 && (
-          <p className="text-xs text-luxury-text-secondary text-center">
+          <p className="text-sm text-luxury-text-secondary text-center">
             +{quadrantTasks.length - 5} more
           </p>
         )}
