@@ -54,8 +54,8 @@ export function LuxuryPlanView({
       <div className="space-y-6">
         {/* Major */}
         <div>
-          <h3 className="text-sm font-semibold text-luxury-indigo mb-3 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-luxury-indigo" />
+          <h3 className="text-base font-semibold text-luxury-indigo mb-3 flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-luxury-indigo" />
             Major Task (1)
           </h3>
           <LuxuryTaskSlot
@@ -69,8 +69,8 @@ export function LuxuryPlanView({
 
         {/* Medium */}
         <div>
-          <h3 className="text-sm font-semibold text-luxury-cyan mb-3 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-luxury-cyan" />
+          <h3 className="text-base font-semibold text-luxury-cyan mb-3 flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-luxury-cyan" />
             Medium Tasks (3)
           </h3>
           <div className="space-y-2">
@@ -90,8 +90,8 @@ export function LuxuryPlanView({
 
         {/* Small */}
         <div>
-          <h3 className="text-sm font-semibold text-luxury-orange mb-3 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-luxury-orange" />
+          <h3 className="text-base font-semibold text-luxury-orange mb-3 flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-luxury-orange" />
             Small Tasks (5)
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

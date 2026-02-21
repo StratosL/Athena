@@ -71,6 +71,7 @@ export function DailyPlan() {
     <AppShell
       title="Daily Planning"
       subtitle="Plan your day with the 1-3-5 rule"
+      fillHeight
     >
       {isLoading ? (
         <div className="text-center py-12 text-luxury-text-secondary">
@@ -81,7 +82,7 @@ export function DailyPlan() {
           Failed to load daily plan. Is the backend running?
         </div>
       ) : plan ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0 lg:[&>*]:min-h-0 lg:[&>*]:overflow-auto">
           <div className="lg:col-span-2">
             <LuxuryPlanView
               plan={plan}
@@ -108,7 +109,7 @@ export function DailyPlan() {
         targetSlot={targetSlot}
       />
 
-      <footer className="mt-8 text-center text-luxury-text-secondary text-sm">
+      <footer className="flex-shrink-0 mt-4 text-center text-luxury-text-secondary text-sm">
         <p>1 Major · 3 Medium · 5 Small = 9 focused tasks for your day</p>
       </footer>
     </AppShell>

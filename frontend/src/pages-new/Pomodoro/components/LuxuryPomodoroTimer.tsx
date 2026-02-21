@@ -196,7 +196,7 @@ export function LuxuryPomodoroTimer({ taskId, taskTitle, className }: LuxuryPomo
               {formatTime(displaySeconds)}
             </p>
             <p className={cn(
-              "text-sm mt-2 font-medium",
+              "text-base mt-2 font-medium",
               state === "WORK" ? "text-luxury-indigo" :
               state === "SHORT_BREAK" || state === "LONG_BREAK" ? "text-luxury-gold" :
               "text-luxury-text-secondary"

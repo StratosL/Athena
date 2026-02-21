@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~32.5 hours (Days 1–33) |
+| Total time | ~33 hours (Days 1–34) |
 | Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 14 (3 vault + 7 Artemis + 1 knowledge + 2 research + 1 skills) |
@@ -21,11 +21,33 @@
 | Type checking | pyright (3 sub-projects) + TypeScript (frontend) — 0 errors across all |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 16.3k char system prompt (synced) |
-| Current state | Dashboard cards fill viewport with readable font sizes across Plan, Matrix, and Stats |
+| Current state | Tasks, Daily Plan, and Pomodoro pages fill viewport with enlarged fonts matching Dashboard |
 
 ---
 
 ## The Journey
+
+### Day 34: Full-Height + Font Bump for Tasks, Daily Plan, Pomodoro (Feb 21) — ~30 min
+
+Extended the Dashboard's `fillHeight` viewport-filling treatment to the three remaining content pages: Tasks, Daily Plan, and Pomodoro. Each page now fills the full desktop viewport with enlarged, readable font sizes and properly scrollable content areas.
+
+**Changes (11 files modified, 0 new files):**
+
+- **`Tasks/index.tsx`** — Added `fillHeight`, removed `max-w-3xl` constraint on quick input, QuadrantGrid and list view fill height with `flex-1 min-h-0`, footer pinned with `flex-shrink-0`.
+- **`QuadrantGrid/index.tsx`** (full mode) — Task title `text-sm` → `text-base`, pomodoro count `text-xs` → `text-sm`, checkboxes `w-5` → `w-6` with `border-2`, delete icon `w-4` → `w-5`, card padding `p-3` → `p-4`, empty state `text-sm` → `text-base`, subtitle `text-sm` → `text-base`. Grid uses `auto-rows-fr` for equal quadrant height. Cards are flex columns with scrollable task lists.
+- **`DailyPlan/index.tsx`** — Added `fillHeight`, grid columns fill height, footer pinned.
+- **`LuxuryPlanView.tsx`** — Section headers `text-sm` → `text-base`, dots `w-2` → `w-2.5`.
+- **`LuxuryTaskSlot.tsx`** — Slot min-heights bumped (+8px each), empty slot label `text-sm` → `text-base`, plus icon `w-4` → `w-5`, subtitle `text-xs` → `text-sm`, action buttons `w-7` → `w-8`, icons `w-4` → `w-5`.
+- **`LuxuryPlanProgress.tsx`** — Labels `text-sm` → `text-base`, progress bar `h-2` → `h-2.5`, percentage `text-xs` → `text-sm`.
+- **`LuxuryBacklogSidebar.tsx`** — Title added `text-lg`, subtitle `text-sm` → `text-base`, checkboxes `w-4` → `w-5`, task titles `text-sm` → `text-base`, removed `max-h-[600px]` cap.
+- **`Pomodoro/index.tsx`** — Added `fillHeight`, timer column vertically centered, sidebar scrollable, tips `text-sm` → `text-base`.
+- **`LuxuryPomodoroTimer.tsx`** — State label `text-sm` → `text-base`.
+- **`LuxuryTaskLinker.tsx`** — Title added `text-lg`, task items `text-sm` → `text-base`, badge `text-[10px]` → `text-xs`, max-height `max-h-48` → `max-h-64`.
+- **`LuxurySessionList.tsx`** — Title added `text-lg`, session text `text-sm` → `text-base`, timestamp `text-xs` → `text-sm`, padding `p-2` → `p-3`.
+
+**Verification:** `tsc --noEmit` — 0 errors. `vite build` — success.
+
+---
 
 ### Day 33: Dashboard Font Size Bump (Feb 21) — ~15 min
 

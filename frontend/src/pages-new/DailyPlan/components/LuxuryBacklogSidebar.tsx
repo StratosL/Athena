@@ -19,10 +19,10 @@ const quadrantBadgeVariant = {
 export function LuxuryBacklogSidebar({ tasks, onComplete, className }: LuxuryBacklogSidebarProps) {
   return (
     <GlassCard className={cn("p-6", className)} hoverable={false}>
-      <h3 className="font-playfair font-semibold text-luxury-text-primary mb-1">
+      <h3 className="text-lg font-playfair font-semibold text-luxury-text-primary mb-1">
         Task Backlog
       </h3>
-      <p className="text-sm text-luxury-text-secondary mb-4">
+      <p className="text-base text-luxury-text-secondary mb-4">
         {tasks.length} tasks available
       </p>
 
@@ -35,18 +35,18 @@ export function LuxuryBacklogSidebar({ tasks, onComplete, className }: LuxuryBac
           to get started.
         </p>
       ) : (
-        <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+        <div className="space-y-2 overflow-y-auto pr-1">
           {tasks.map((task) => (
             <div
               key={task.id}
               className="flex items-center justify-between p-3 rounded-lg border border-luxury-border hover:bg-white/5 transition-colors"
             >
-              <div className="flex items-center gap-2 min-w-0 flex-1">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
                 <button
                   onClick={() => onComplete?.(task.id)}
-                  className="w-4 h-4 rounded border border-luxury-border hover:border-luxury-gold flex-shrink-0 transition-colors"
+                  className="w-5 h-5 rounded border border-luxury-border hover:border-luxury-gold flex-shrink-0 transition-colors"
                 />
-                <span className="text-sm text-luxury-text-primary truncate">
+                <span className="text-base text-luxury-text-primary truncate">
                   {task.title}
                 </span>
               </div>

@@ -65,10 +65,11 @@ export function Tasks() {
       title="Task Management"
       subtitle="Prioritize with the Eisenhower Matrix"
       actions={<ViewToggle value={viewMode} onChange={setViewMode} />}
+      fillHeight
     >
       {/* Quick Task Input */}
-      <div className="mb-6">
-        <LuxuryQuickTaskInput onSubmit={handleCreateTask} className="max-w-3xl" />
+      <div className="mb-6 flex-shrink-0">
+        <LuxuryQuickTaskInput onSubmit={handleCreateTask} />
       </div>
 
       {/* Content */}
@@ -81,11 +82,12 @@ export function Tasks() {
       ) : viewMode === "matrix" ? (
         <>
           {/* Desktop: 2x2 grid */}
-          <div className="hidden md:block">
+          <div className="hidden md:flex flex-1 min-h-0">
             <QuadrantGrid
               tasks={pendingTasks}
               onComplete={handleCompleteTask}
               onDelete={handleDeleteTask}
+              className="flex-1 lg:[&>*]:min-h-0 lg:[&>*]:overflow-auto"
             />
           </div>
           {/* Mobile: Swipeable tabs per quadrant */}
@@ -94,16 +96,18 @@ export function Tasks() {
           </div>
         </>
       ) : (
-        <LuxuryTaskList
-          tasks={pendingTasks}
-          onComplete={handleCompleteTask}
-          onDelete={handleDeleteTask}
-          emptyMessage="No tasks yet. Add one above!"
-        />
+        <div className="flex-1 min-h-0 overflow-auto">
+          <LuxuryTaskList
+            tasks={pendingTasks}
+            onComplete={handleCompleteTask}
+            onDelete={handleDeleteTask}
+            emptyMessage="No tasks yet. Add one above!"
+          />
+        </div>
       )}
 
       {/* Stats Footer */}
-      <footer className="mt-8 text-center text-luxury-text-secondary text-sm">
+      <footer className="flex-shrink-0 mt-4 text-center text-luxury-text-secondary text-sm">
         <p>
           {pendingTasks.length} pending tasks |{" "}
           {tasks.filter((t) => t.status === "completed").length} completed

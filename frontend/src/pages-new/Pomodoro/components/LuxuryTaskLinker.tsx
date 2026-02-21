@@ -19,16 +19,16 @@ const quadrantBadgeVariant = {
 export function LuxuryTaskLinker({ tasks, selectedTask, onSelect, className }: LuxuryTaskLinkerProps) {
   return (
     <GlassCard className={cn("p-5", className)} hoverable={false}>
-      <h3 className="font-playfair font-semibold text-luxury-text-primary mb-3">
+      <h3 className="text-lg font-playfair font-semibold text-luxury-text-primary mb-3">
         Link to Task
       </h3>
 
       {selectedTask && (
         <div className="p-3 mb-3 rounded-lg bg-luxury-indigo/10 border border-luxury-indigo/20">
-          <p className="text-sm font-medium text-luxury-indigo">{selectedTask.title}</p>
+          <p className="text-base font-medium text-luxury-indigo">{selectedTask.title}</p>
           <button
             onClick={() => onSelect(null)}
-            className="text-xs text-luxury-text-secondary hover:text-luxury-text-primary mt-1"
+            className="text-sm text-luxury-text-secondary hover:text-luxury-text-primary mt-1"
           >
             Remove link
           </button>
@@ -36,15 +36,15 @@ export function LuxuryTaskLinker({ tasks, selectedTask, onSelect, className }: L
       )}
 
       {tasks.length === 0 ? (
-        <p className="text-sm text-luxury-text-secondary">No pending tasks.</p>
+        <p className="text-base text-luxury-text-secondary">No pending tasks.</p>
       ) : (
-        <div className="max-h-48 overflow-y-auto space-y-1">
+        <div className="max-h-64 overflow-y-auto space-y-1">
           {tasks.slice(0, 10).map((task) => (
             <button
               key={task.id}
               onClick={() => onSelect(task)}
               className={cn(
-                "w-full text-left p-2 rounded-lg text-sm transition-colors",
+                "w-full text-left p-2.5 rounded-lg text-base transition-colors",
                 selectedTask?.id === task.id
                   ? "bg-luxury-indigo/20 text-luxury-indigo"
                   : "hover:bg-white/5 text-luxury-text-secondary"
@@ -52,11 +52,11 @@ export function LuxuryTaskLinker({ tasks, selectedTask, onSelect, className }: L
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="truncate">{task.title}</span>
-                <Badge variant={quadrantBadgeVariant[task.quadrant]} className="flex-shrink-0 text-[10px]">
+                <Badge variant={quadrantBadgeVariant[task.quadrant]} className="flex-shrink-0 text-xs">
                   Q{task.quadrant}
                 </Badge>
               </div>
-              <span className="text-xs text-luxury-text-secondary">
+              <span className="text-sm text-luxury-text-secondary">
                 {task.pomodoro_count} pomodoros
               </span>
             </button>

@@ -107,42 +107,42 @@ function FullTaskItem({
   return (
     <GlassCard
       className={cn(
-        "p-3 cursor-pointer",
+        "p-4 cursor-pointer",
         config.glow,
         isCompleted && "opacity-50"
       )}
       hoverable={false}
       onClick={() => onClick?.(task)}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-start gap-2 min-w-0 flex-1">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3 min-w-0 flex-1">
           <button
             onClick={(e) => {
               e.stopPropagation()
               onComplete?.(task.id)
             }}
             className={cn(
-              "w-5 h-5 rounded border flex-shrink-0 flex items-center justify-center mt-0.5 transition-colors",
+              "w-6 h-6 rounded border-2 flex-shrink-0 flex items-center justify-center mt-0.5 transition-colors",
               isCompleted
                 ? "bg-luxury-gold border-luxury-gold"
                 : "border-luxury-border hover:border-luxury-gold"
             )}
           >
             {isCompleted && (
-              <svg className="w-3 h-3 text-luxury-obsidian" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-luxury-obsidian" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
             )}
           </button>
           <div className="min-w-0 flex-1">
             <p className={cn(
-              "text-sm font-medium text-luxury-text-primary truncate",
+              "text-base font-medium text-luxury-text-primary truncate",
               isCompleted && "line-through text-luxury-text-secondary"
             )}>
               {task.title}
             </p>
             {task.pomodoro_count > 0 && (
-              <span className="text-xs text-luxury-text-secondary">
+              <span className="text-sm text-luxury-text-secondary">
                 {task.pomodoro_count} pomodoros
               </span>
             )}
@@ -156,7 +156,7 @@ function FullTaskItem({
             }}
             className="text-luxury-text-secondary hover:text-red-400 transition-colors flex-shrink-0"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
           </button>
@@ -187,8 +187,8 @@ function QuadrantSection({
   return (
     <GlassCard
       className={cn(
-        compact ? "p-4" : "p-4",
-        compact ? "min-h-[160px]" : "min-h-[260px]",
+        "p-4 flex flex-col",
+        compact ? "min-h-[160px]" : "min-h-0",
         config.glow
       )}
       hoverable={false}
@@ -199,7 +199,7 @@ function QuadrantSection({
           {config.title}
         </h3>
         {!compact && (
-          <span className="text-sm text-luxury-text-secondary ml-auto">
+          <span className="text-base text-luxury-text-secondary ml-auto">
             {config.subtitle}
           </span>
         )}
@@ -208,11 +208,11 @@ function QuadrantSection({
         </Badge>
       </div>
 
-      <div className={cn("space-y-1", compact ? "overflow-y-auto" : "space-y-2")}>
+      <div className={cn("space-y-1", compact ? "overflow-y-auto" : "space-y-2 overflow-y-auto flex-1")}>
         {quadrantTasks.length === 0 ? (
           <p className={cn(
             "text-luxury-text-secondary text-center",
-            compact ? "text-sm py-4" : "text-sm py-8"
+            compact ? "text-sm py-4" : "text-base py-8"
           )}>
             No tasks
           </p>
@@ -251,7 +251,7 @@ export function QuadrantGrid({
   className,
 }: QuadrantGridProps) {
   return (
-    <div className={cn("grid grid-cols-1 md:grid-cols-2 gap-4", className)}>
+    <div className={cn("grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-fr", className)}>
       <QuadrantSection quadrant={1} tasks={tasks} compact={compact} onComplete={onComplete} onDelete={onDelete} onClick={onClick} />
       <QuadrantSection quadrant={2} tasks={tasks} compact={compact} onComplete={onComplete} onDelete={onDelete} onClick={onClick} />
       <QuadrantSection quadrant={3} tasks={tasks} compact={compact} onComplete={onComplete} onDelete={onDelete} onClick={onClick} />

@@ -40,26 +40,27 @@ export function Pomodoro() {
     <AppShell
       title="Pomodoro Timer"
       subtitle="Focused work sessions with breaks"
+      fillHeight
     >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-1 min-h-0">
         {/* Timer - main column */}
-        <div className="lg:col-span-2 flex flex-col items-center">
+        <div className="lg:col-span-2 flex flex-col items-center justify-center">
           <LuxuryPomodoroTimer
             taskId={selectedTask?.id}
             taskTitle={selectedTask?.title}
             className="max-w-xl w-full"
           />
 
-          <p className="mt-6 text-center text-luxury-text-secondary text-sm">
+          <p className="mt-6 text-center text-luxury-text-secondary text-base">
             Tip: Stay focused during the work session, take a real break during breaks
           </p>
-          <p className="text-xs text-luxury-text-secondary mt-1 text-center">
+          <p className="text-sm text-luxury-text-secondary mt-1 text-center">
             Keyboard: Space to start/pause, Escape to stop
           </p>
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-auto">
           <LuxuryTaskLinker
             tasks={pendingTasks}
             selectedTask={selectedTask}
