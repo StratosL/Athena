@@ -217,7 +217,7 @@ function QuadrantSection({
             No tasks
           </p>
         ) : compact ? (
-          quadrantTasks.slice(0, 5).map((task) => (
+          quadrantTasks.map((task) => (
             <CompactTaskItem
               key={task.id}
               task={task}
@@ -236,11 +236,6 @@ function QuadrantSection({
               onClick={onClick}
             />
           ))
-        )}
-        {compact && quadrantTasks.length > 5 && (
-          <p className="text-sm text-luxury-text-secondary text-center">
-            +{quadrantTasks.length - 5} more
-          </p>
         )}
       </div>
     </GlassCard>

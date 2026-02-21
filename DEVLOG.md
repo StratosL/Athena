@@ -34,7 +34,7 @@ Dashboard card content was too small to read comfortably on desktop, especially 
 **Changes (3 files modified, 0 new files):**
 
 - **`PlanWidget/index.tsx`** — Task titles `text-sm` → `text-base`, section labels (Major/Medium/Small) `text-xs` → `text-sm`, card title added `text-lg`, checkboxes `w-4` → `w-5`, row padding `py-1.5` → `py-2.5`, progress bar `h-1.5` → `h-2`.
-- **`QuadrantGrid/index.tsx`** — Compact headers `text-sm` → `text-base`, task titles `text-sm` → `text-base`, badge `text-[10px]` → `text-xs`, checkboxes `w-4` → `w-5`, removed `max-h-[120px]` cap so content fills available height.
+- **`QuadrantGrid/index.tsx`** — Compact headers `text-sm` → `text-base`, task titles `text-sm` → `text-base`, badge `text-[10px]` → `text-xs`, checkboxes `w-4` → `w-5`, removed `max-h-[120px]` cap so content fills available height. Removed hardcoded `slice(0, 5)` limit and "+N more" text — all tasks now render with `overflow-y-auto` scrolling.
 - **`DashboardStatsBar.tsx`** — Stat labels `text-xs` → `text-sm`, timer state label `text-sm` → `text-base`, countdown `text-xl` → `text-2xl`.
 
 **Verification:** `tsc --noEmit` — 0 errors.
