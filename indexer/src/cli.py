@@ -83,7 +83,12 @@ async def cmd_watch(indexer: VaultIndexer) -> None:
 
     console.print(f"Watching vault: [cyan]{vault_path}[/cyan]")
     console.print("[dim]Press Ctrl+C to stop[/dim]")
-    await start_watcher(indexer, vault_path)
+    await start_watcher(
+        indexer,
+        vault_path,
+        force_polling=indexer.settings.watcher_polling,
+        poll_interval=indexer.settings.watcher_poll_interval,
+    )
 
 
 def main() -> None:

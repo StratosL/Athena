@@ -18,6 +18,10 @@ class IndexerSettings(BaseSettings):
     # Obsidian Vault
     vault_path: str
 
+    # Watcher
+    watcher_polling: bool = False
+    watcher_poll_interval: int = 30
+
     # Logging
     log_level: str = "INFO"
 

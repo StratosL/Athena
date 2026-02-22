@@ -56,6 +56,14 @@ Wrote the Devpost hackathon submission article, fixed a converse API field name 
 - **`indexer/src/__main__.py`** — Entry point for `python -m src` invocation inside the container.
 - **`docker-compose.yml`** — Added `indexer-watcher` service: mounts `VAULT_PATH` read-only, auto-syncs vault changes to Elasticsearch via watchdog. Starts automatically with `docker compose up` — no manual indexing step needed.
 
+**Polling fallback for Windows/macOS Docker (4 files):**
+
+- **Root cause:** Docker bind-mounted Windows volumes don't propagate inotify events to Linux containers, so watchdog's native `Observer` never fires.
+- **`indexer/src/watcher.py`** — Auto-detects inotify support by writing a probe file and checking for events within 3s. Falls back to `PollingObserver` (every 30s) when events don't propagate. Also runs an initial `index_vault()` bulk sync on startup to catch notes created before the watcher started.
+- **`indexer/src/config.py`** — Added `WATCHER_POLLING` (bool) and `WATCHER_POLL_INTERVAL` (int, default 30s) settings.
+- **`indexer/src/cli.py`** — Passes new watcher settings through to `start_watcher()`.
+- **`.env.example`** — Documented `WATCHER_POLLING` and `WATCHER_POLL_INTERVAL`.
+
 ---
 
 ### Day 35: E2E Bug Sweep — 6 Fixes (Feb 21) — ~1 hour
