@@ -54,7 +54,7 @@ Athena is a conversational AI agent built on [Elastic Agent Builder](https://www
 
 - **20 Tools Registered** - 6 ES|QL (read-only analytics) + 14 MCP (read/write operations) in Elastic Agent Builder
 - **8 Sub-Projects** - Indexer, MCP server, voice client, agent config, heartbeat, Artemis backend, frontend, setup scripts
-- **20 Sample Notes** - Demo vault with 6 folders, 135+ wikilinks, realistic project/meeting/daily note content
+- **23 Sample Notes** - Demo vault with 7 folders, 135+ wikilinks, realistic project/meeting/daily note content
 - **Full E2E Validation** - 28/28 integration tests passing across all components
 - **Automated Setup** - One command configures Supabase, Elasticsearch, and Agent Builder from `.env`
 - **Type Safe** - pyright with 0 errors across all Python sub-projects
@@ -229,7 +229,8 @@ Athena/
 ├── agent-config/              # Agent Builder system prompt + tool definitions
 ├── heartbeat/                 # Proactive agent check-ins (APScheduler)
 ├── scripts/                   # Setup automation (validate, setup, verify)
-├── sample-vault/              # Demo Obsidian vault (20 notes, 6 folders)
+├── decisions/                 # Architecture Decision Records (11 ADRs)
+├── sample-vault/              # Demo Obsidian vault (23 notes, 7 folders)
 ├── supabase/migrations/       # SQL schema for Artemis tables
 ├── docker-compose.yml         # All services, one-command startup
 ├── setup.sh                   # Automated setup entry point
@@ -309,7 +310,7 @@ cd indexer && uv run athena-index watch
 ### Docker Profiles
 
 ```bash
-# Default: Artemis backend + frontend + MCP server + voice client
+# Default: Artemis backend + frontend + MCP server + voice proxy + indexer watcher
 docker compose up --build
 
 # With ngrok tunnel (needed for Agent Builder)
@@ -331,6 +332,7 @@ docker compose --profile heartbeat up --build
 | **[Tool Definitions](agent-config/tools/)** | ES|QL and index search tool JSON specs |
 | **[.env.example](.env.example)** | All configuration variables with documentation |
 | **[Development Log](DEVLOG.md)** | Session-by-session build diary |
+| **[Decisions](decisions/)** | Architecture Decision Records (11 ADRs) |
 
 ---
 
@@ -400,7 +402,7 @@ docker compose --profile heartbeat up --build
 - [x] **Phase 1** - Indexer + ES|QL tools + sample vault
 - [x] **Phase 2** - MCP server with 14 tools (vault, Artemis, knowledge, research, skills)
 - [x] **Phase 3** - Agent Builder deployment with 20 tools + system prompt
-- [x] **Phase 4** - Docker Compose with full stack (5 services + ngrok)
+- [x] **Phase 4** - Docker Compose with full stack (6 services + ngrok)
 - [x] **Phase 5** - Artemis monorepo merge + chat sidebar integration
 - [x] **Phase 6** - Memory system (profile + long-term memory + daily note write-back)
 - [x] **Phase 7** - Heartbeat service (proactive agent check-ins via APScheduler)
