@@ -27,9 +27,9 @@
 
 ## The Journey
 
-### Day 36: Devpost Article + API Fix + Voice Research (Feb 22) — ~1 hour
+### Day 36: Devpost Article + API Fix + Voice Research + Indexer Watcher (Feb 22) — ~1.5 hours
 
-Wrote the Devpost hackathon submission article, fixed a converse API field name bug, and researched real-time voice alternatives.
+Wrote the Devpost hackathon submission article, fixed a converse API field name bug, researched real-time voice alternatives, and added the indexer watcher to Docker Compose for automatic vault→ES sync.
 
 **Devpost submission (`devpost/submission.md`):**
 
@@ -49,6 +49,12 @@ Wrote the Devpost hackathon submission article, fixed a converse API field name 
 - Surveyed 10 platforms: OpenAI Realtime API, Gemini Live, ElevenLabs, LiveKit, Vapi, Deepgram, Hume AI, Retell, Pipecat, Ultravox.
 - Key finding: native speech-to-speech APIs (OpenAI Realtime, Gemini Live) can't use Agent Builder as the brain — they require their own model. Best fit for Athena is streaming STT (Deepgram) + existing agent + streaming TTS, reducing latency from 3-8s to ~1.5-3s.
 - Documented trade-offs for each approach (latency, cost, complexity, agent tool compatibility).
+
+**Indexer watcher Docker service (3 new files):**
+
+- **`indexer/Dockerfile`** — Multi-stage build (uv builder + slim runtime), runs `python -m src watch` by default.
+- **`indexer/src/__main__.py`** — Entry point for `python -m src` invocation inside the container.
+- **`docker-compose.yml`** — Added `indexer-watcher` service: mounts `VAULT_PATH` read-only, auto-syncs vault changes to Elasticsearch via watchdog. Starts automatically with `docker compose up` — no manual indexing step needed.
 
 ---
 

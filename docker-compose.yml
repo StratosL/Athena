@@ -76,6 +76,19 @@ services:
       - voice-proxy
     restart: unless-stopped
 
+  # --- Indexer Watcher (auto-syncs vault changes to Elasticsearch) ---
+  indexer-watcher:
+    build:
+      context: ./indexer
+      dockerfile: Dockerfile
+    volumes:
+      - "${VAULT_PATH:-./sample-vault}:/vault:ro"
+    env_file:
+      - .env
+    environment:
+      - VAULT_PATH=/vault
+    restart: unless-stopped
+
   # --- Athena Heartbeat Service (optional — use --profile heartbeat) ---
   heartbeat:
     profiles:
