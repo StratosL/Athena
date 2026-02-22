@@ -100,8 +100,15 @@ def _detect_inotify_works(vault_path: Path, timeout: float = 3.0) -> bool:
     try:
         probe.write_text("probe", encoding="utf-8")
         detected = event_fired.wait(timeout=timeout)
+    except OSError:
+        # Read-only filesystem (e.g. Docker :ro mount) — inotify won't help
+        logger.debug("Cannot write probe file (read-only filesystem)")
+        detected = False
     finally:
-        probe.unlink(missing_ok=True)
+        try:
+            probe.unlink(missing_ok=True)
+        except OSError:
+            pass
         observer.stop()
         observer.join()
 
