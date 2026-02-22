@@ -275,7 +275,7 @@ POST /api/agent_builder/converse
   "agent_id": "agent-id",
   "conversation_id": "optional-existing-conversation-id",
   "configuration_overrides": {
-    "systemPromptAddition": "Optional per-request context injected after the main system prompt"
+    "instructions": "Optional per-request context injected after the main system prompt"
   }
 }
 ```
@@ -292,7 +292,7 @@ POST /api/agent_builder/converse
 
 **CRITICAL:** The agent message is at `response.response.message`, NOT `response.response`. The `response` field contains an object with a `message` key.
 
-**`configuration_overrides.systemPromptAddition`** is useful for injecting per-request context (user profile, memory, session state) without modifying the stored system prompt.
+**`configuration_overrides.instructions`** is useful for injecting per-request context (user profile, memory, session state) without modifying the stored system prompt. (Previously documented as `systemPromptAddition`, which is no longer accepted by the API.)
 
 ---
 

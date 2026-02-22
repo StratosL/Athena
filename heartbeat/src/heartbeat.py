@@ -184,7 +184,7 @@ async def heartbeat_tick(settings: HeartbeatSettings) -> None:
         payload["conversation_id"] = conversation_id
     if memory_context:
         payload["configuration_overrides"] = {
-            "systemPromptAddition": memory_context,
+            "instructions": memory_context,
         }
 
     # 6. Call the converse API

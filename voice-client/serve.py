@@ -160,7 +160,7 @@ async def chat(request: web.Request) -> web.Response:
     memory_context = _read_memory_context()
     if memory_context:
         payload["configuration_overrides"] = {
-            "systemPromptAddition": memory_context,
+            "instructions": memory_context,
         }
 
     try:

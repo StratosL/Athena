@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~33 hours (Days 1–34) |
+| Total time | ~34 hours (Days 1–36) |
 | Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 14 (3 vault + 7 Artemis + 1 knowledge + 2 research + 1 skills) |
@@ -21,11 +21,36 @@
 | Type checking | pyright (3 sub-projects) + TypeScript (frontend) — 0 errors across all |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 16.3k char system prompt (synced) |
-| Current state | E2E bug fixes: proxy conflict, stats mismatch, error handling, delete confirmation, mobile layout |
+| Current state | Devpost article drafted, converse API field fix, real-time voice research |
 
 ---
 
 ## The Journey
+
+### Day 36: Devpost Article + API Fix + Voice Research (Feb 22) — ~1 hour
+
+Wrote the Devpost hackathon submission article, fixed a converse API field name bug, and researched real-time voice alternatives.
+
+**Devpost submission (`devpost/submission.md`):**
+
+- Wrote ~1,200 word submission covering all standard Devpost sections: Inspiration, What It Does, How We Built It, Challenges, Accomplishments, What We Learned, What's Next, Built With.
+- Researched winning Agent Builder projects from Cal Hacks 12.0 (AgentOverflow, MarketMind) for positioning.
+- Added 7 image/diagram placeholders for screenshots and architecture visuals.
+
+**Bug fix — converse API `configuration_overrides` field name (3 files):**
+
+- **Root cause:** `systemPromptAddition` is not a valid field in the Elastic Agent Builder converse API. The correct field is `instructions` inside `configuration_overrides`. This caused a 400 "definition for this key is missing" error when memory files existed in the vault (triggered on Windows where vault path pointed to a populated Obsidian vault).
+- **`voice-client/serve.py`** — Renamed `systemPromptAddition` → `instructions` in converse API payload.
+- **`heartbeat/src/heartbeat.py`** — Same rename.
+- **`api-reference.md`** — Updated converse API docs to reflect correct field name.
+
+**Real-time voice research:**
+
+- Surveyed 10 platforms: OpenAI Realtime API, Gemini Live, ElevenLabs, LiveKit, Vapi, Deepgram, Hume AI, Retell, Pipecat, Ultravox.
+- Key finding: native speech-to-speech APIs (OpenAI Realtime, Gemini Live) can't use Agent Builder as the brain — they require their own model. Best fit for Athena is streaming STT (Deepgram) + existing agent + streaming TTS, reducing latency from 3-8s to ~1.5-3s.
+- Documented trade-offs for each approach (latency, cost, complexity, agent tool compatibility).
+
+---
 
 ### Day 35: E2E Bug Sweep — 6 Fixes (Feb 21) — ~1 hour
 
