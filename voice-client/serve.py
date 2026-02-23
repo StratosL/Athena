@@ -210,7 +210,7 @@ async def transcribe(request: web.Request) -> web.Response:
         resp = await openai_client.post(
             "https://api.openai.com/v1/audio/transcriptions",
             files={"file": (filename, audio_data, "audio/webm")},
-            data={"model": "whisper-1"},
+            data={"model": "whisper-1", "language": "en"},
         )
         resp.raise_for_status()
         return web.json_response(resp.json())

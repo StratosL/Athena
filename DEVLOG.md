@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~34 hours (Days 1–36) |
+| Total time | ~34 hours (Days 1–37) |
 | Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 14 (3 vault + 7 Artemis + 1 knowledge + 2 research + 1 skills) |
@@ -21,11 +21,22 @@
 | Type checking | pyright (3 sub-projects) + TypeScript (frontend) — 0 errors across all |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 16.3k char system prompt (synced) |
-| Current state | Devpost article drafted, converse API field fix, real-time voice research |
+| Current state | Whisper language fix, demo prep |
 
 ---
 
 ## The Journey
+
+### Day 37: Force English Whisper Transcription (Feb 23) — ~15 min
+
+Fixed voice transcription producing Greek text instead of English. Whisper's auto-detect was picking up the user's Greek accent/environment and transcribing into Greek, which then caused the agent to reply in Greek.
+
+**Bug fix — Whisper language parameter (1 file):**
+
+- **Root cause:** The Whisper API call in `voice-client/serve.py` did not specify a `language` parameter. Whisper auto-detected Greek from the audio and transcribed accordingly.
+- **`voice-client/serve.py`** — Added `"language": "en"` to the Whisper transcription request `data` dict. Forces English transcription regardless of accent or background audio.
+
+---
 
 ### Day 36: Devpost Article + API Fix + Voice Research + Indexer Watcher (Feb 22) — ~1.5 hours
 
@@ -1219,4 +1230,4 @@ Phases 1-2 complete. Unified experience built. Linux E2E validated. Remaining wo
 
 ---
 
-*Last updated: February 21, 2026 (Day 33)*
+*Last updated: February 23, 2026 (Day 37)*
