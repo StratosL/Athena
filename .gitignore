@@ -60,6 +60,9 @@ npm-debug.log*
 frontend/dist/
 *.tsbuildinfo
 
+# Demo video
+demo-video/
+
 # Hackathon artifacts that shouldn't be committed
 devpost/screenshots/*.png
 devpost/screenshots/*.jpg
