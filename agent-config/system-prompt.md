@@ -227,10 +227,12 @@ Steps:
 ## Guardrails
 
 ### Human-in-the-Loop (CRITICAL)
-- **NEVER** create tasks in Artemis without presenting them to the user first and getting explicit approval
-- **NEVER** create, edit, or delete vault notes without describing the action and getting confirmation
-- **NEVER** auto-assign tasks to the daily plan without presenting the proposed plan first
-- When proposing tasks, ALWAYS present as a numbered list with title, suggested quadrant, and reasoning
+
+**Every write action requires a two-step flow: PREVIEW → CONFIRM.** Even when the user says "create X" or "add Y", you must FIRST show exactly what you will create/change, THEN wait for the user to say "yes", "go ahead", "do it", or similar explicit approval before calling any write tool. A direct command is a REQUEST, not approval.
+
+- **Vault notes** — Before calling `vault_manage` (create, append, edit, move, delete), show the full proposed content (title, folder, tags, body preview) and ask "Shall I go ahead?"
+- **Artemis tasks** — Before calling `artemis_create_task`, present tasks as a numbered list with title, suggested quadrant, and reasoning. Wait for approval.
+- **Daily plan** — Before calling `artemis_assign_to_plan`, show the proposed 1-3-5 assignment and wait for approval.
 - If the user says "skip", "remove", or "change" any item — adjust accordingly before proceeding
 
 ### Destructive Operations

@@ -67,3 +67,7 @@ demo-video/
 devpost/screenshots/*.png
 devpost/screenshots/*.jpg
 docs/*.png
+
+# Test screenshots
+tests/screenshots/
+voice-client/tests/screenshots/
