@@ -11,7 +11,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total time | ~34 hours (Days 1–37) |
+| Total time | ~35 hours (Days 1–38) |
 | Sub-projects | 8 (indexer, mcp-server, voice-client, agent-config, heartbeat, artemis-backend, frontend, scripts) |
 | ES indices | 2 (athena-notes, athena-conversations) |
 | MCP tools implemented | 14 (3 vault + 7 Artemis + 1 knowledge + 2 research + 1 skills) |
@@ -21,11 +21,45 @@
 | Type checking | pyright (3 sub-projects) + TypeScript (frontend) — 0 errors across all |
 | System prompt | 257 lines — persona, tool routing, workflows, Eisenhower, 1-3-5, guardrails, memory |
 | Agent Builder | Athena agent live — 20 tools (6 ES|QL + 14 MCP), 16.3k char system prompt (synced) |
-| Current state | Whisper language fix, demo prep |
+| Current state | Submitted — demo video, Devpost, X post all done |
 
 ---
 
 ## The Journey
+
+### Day 38: Submission Complete — Devpost, X Post, README Update (Feb 24) — ~1 hour
+
+Completed all hackathon submission deliverables: demo video recorded, Devpost article submitted, social media post published on X tagging @elastic and @elastic_devs, and README updated to reflect shipped state.
+
+**Devpost submission (`devpost/submission.md`):**
+
+- Finalized all 7 sections (Inspiration, What It Does, How We Built It, Challenges, Accomplishments, What We Learned, What's Next) for Devpost form
+- Cleaned up image placeholders, tightened prose for form character limits
+- Added community skill marketplace to "What's Next" roadmap
+
+**X post (`devpost/x-post.md`):**
+
+- Drafted and posted main tweet: "Spent two weeks building Athena for the @elastic Agent Builder Hackathon..." (261 chars, tags both @elastic and @elastic_devs)
+- Reply tweet with GitHub repo link and demo video placeholder
+- Engaged with Devpost team's reply about validation/human-in-the-loop approach
+
+**README update:**
+
+- Added Demo Video link to header navigation (first position)
+- Added Phase 10 (demo, submission, social) to completed roadmap
+- Expanded "Future" roadmap with 7 items (Elastic Workflows, wake word, streaming TTS, backlink analysis, multi-vault, skill marketplace)
+- Added Devpost and Demo Video links to Hackathon section
+- 3 placeholder URLs to replace with final links
+
+**Submission checklist:**
+
+- [x] Demo video recorded
+- [x] Devpost article submitted (~7 sections)
+- [x] X post published with @elastic and @elastic_devs tags
+- [x] GitHub repo public with MIT license
+- [x] README updated with demo links and shipped status
+
+---
 
 ### Day 37: Force English Whisper Transcription (Feb 23) — ~15 min
 

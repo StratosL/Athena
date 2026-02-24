@@ -14,7 +14,7 @@
 
 **Turn scattered knowledge into focused action through intelligent, conversational orchestration.**
 
-[Quick Start](#-quick-start) | [Features](#-key-features) | [Architecture](#%EF%B8%8F-architecture) | [Documentation](#-documentation) | [Roadmap](#%EF%B8%8F-roadmap)
+[Demo Video](https://youtube.com/PLACEHOLDER) | [Quick Start](#-quick-start) | [Features](#-key-features) | [Architecture](#%EF%B8%8F-architecture) | [Documentation](#-documentation)
 
 </div>
 
@@ -408,20 +408,25 @@ docker compose --profile heartbeat up --build
 - [x] **Phase 7** - Heartbeat service (proactive agent check-ins via APScheduler)
 - [x] **Phase 8** - Setup automation (`./setup.sh` one-command bootstrap)
 - [x] **Phase 9** - Skills system (vault runtime skills + Claude Code developer skills)
+- [x] **Phase 10** - Demo video, Devpost submission, social post
 
-### Upcoming
+### Future
 
-- [ ] **Demo Video** - Record end-to-end demo while Elastic Cloud trial is active
 - [ ] **Streaming Responses** - SSE token-by-token output in chat sidebar
-- [ ] **uv Workspaces** - Unified monorepo with shared dependency management
+- [ ] **Elastic Workflows** - Automated vault watcher and daily planning assistant
+- [ ] **Wake Word Detection** - "Hey Athena" via Picovoice Porcupine
+- [ ] **Streaming TTS** - Progressive audio playback for sub-second voice feel
+- [ ] **Backlink Analysis** - Traverse wikilink graphs via Elasticsearch
 - [ ] **Multi-Vault Support** - Switch between vaults without re-indexing
-- [ ] **Skill Marketplace** - Community-shared vault skill templates
+- [ ] **Community Skill Marketplace** - Share reusable workflow templates across users
 
 ---
 
 ## Hackathon
 
 **Event:** [Elasticsearch Agent Builder Hackathon](https://elasticsearch.devpost.com/) | **Deadline:** February 27, 2026 | **Prize Pool:** $20,000
+
+**Submission:** [Devpost](https://devpost.com/software/PLACEHOLDER) | [Demo Video](https://youtube.com/PLACEHOLDER)
 
 ---
 
