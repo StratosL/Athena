@@ -14,7 +14,7 @@
 
 **Turn scattered knowledge into focused action through intelligent, conversational orchestration.**
 
-[Demo Video](https://youtube.com/PLACEHOLDER) | [Quick Start](#-quick-start) | [Features](#-key-features) | [Architecture](#%EF%B8%8F-architecture) | [Documentation](#-documentation)
+[Demo Video](https://youtu.be/DYFCHD7zh6Y) | [Quick Start](#-quick-start) | [Features](#-key-features) | [Architecture](#%EF%B8%8F-architecture) | [Documentation](#-documentation)
 
 </div>
 
@@ -426,7 +426,7 @@ docker compose --profile heartbeat up --build
 
 **Event:** [Elasticsearch Agent Builder Hackathon](https://elasticsearch.devpost.com/) | **Deadline:** February 27, 2026 | **Prize Pool:** $20,000
 
-**Submission:** [Devpost](https://devpost.com/software/PLACEHOLDER) | [Demo Video](https://youtube.com/PLACEHOLDER)
+**Submission:** [Devpost](https://x.com/StratosLouvaris/status/2026201112928252310) | [Demo Video](https://youtu.be/DYFCHD7zh6Y)
 
 ---
 
