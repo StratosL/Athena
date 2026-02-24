@@ -179,19 +179,9 @@ curl -s "$ELASTIC_URL/athena-notes/_count" \
 
 ## Architecture
 
-```
-User <-> Voice Layer (STT/TTS) <-> Agent Builder (Athena) <-> Elasticsearch (ELSER)
-              |                                                     ^
-              v MCP Protocol                                        | ES|QL
-         Athena MCP Server                                          |
-           |-- Vault tools     -> Obsidian Vault (filesystem)       |
-           |-- Artemis tools   -> Artemis REST API (:8000)          |
-           |-- Skills tools    -> Vault Meta/Skills/ (workflows)    |
-           |-- Knowledge tools -> Elasticsearch (write-back)        |
-           '-- Research tools  -> Web search + URL fetch            |
-                                                                    |
-         Indexer CLI ---------- Obsidian Vault -> Elasticsearch ----'
-```
+<div align="center">
+  <img src="assets/athena-architecture.png" alt="Athena Architecture Diagram" width="800">
+</div>
 
 **Tech Stack:**
 
